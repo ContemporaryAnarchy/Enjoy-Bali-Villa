@@ -6,6 +6,8 @@ contract Lottery {
 
     address public owner;
 
+    bool isInitialized = false;
+
     event lottoInitialized (
         uint softCap,
         uint hardCap,
@@ -56,17 +58,31 @@ contract Lottery {
         return (ownerTicketCount[msg.sender]);
     }
 
+    function getbuyerPosition() public view returns (address[] memory) {
+        return buyerPosition;
+    }
+
     function getBuyerPositions(address buyer) public view returns (uint[] memory) {
-        uint[] memory positions;
+
+        uint counter = 0;
 
         for (uint i = 0; i < buyerPosition.length; i++) {
             if (buyerPosition[i] == buyer) {
-                positions[i] = i;
-                if (i == buyerPosition.length - 1) {
-                    return positions;
-                }
+                counter++;
             }
         } 
+
+        uint[] memory positions = new uint[](counter);
+        uint p = 0;
+
+        for (uint z = 0; z < buyerPosition.length; z++) {
+            if (buyerPosition[z] == buyer) {
+                p++;
+                positions[p - 1] = z;
+            }
+        } 
+
+        return positions;
     }
 
     
@@ -83,6 +99,7 @@ contract Lottery {
         startTime = now + time;
 
         emit lottoInitialized(softCap, hardCap, villaPrice, ticketPrice, startTime);
+        isInitialized = true;
     }
 
     /**
@@ -90,7 +107,8 @@ contract Lottery {
      */
 
     function buyTicket() public payable {
-        require(msg.value > 0, "No ether sent");
+        require(isInitialized, "Lottery is not initialized.");
+        require(msg.value > 0, "No ether sent.");
 
         uint value = msg.value;
         ownerTicketCount[msg.sender] += value.div(ticketPrice);
@@ -99,7 +117,7 @@ contract Lottery {
         //instead of having ticket IDs, this design tracks the order in which addresses participate.
         buyerPosition.push(msg.sender);
 
-        emit ticketPurchased(msg.sender, ticketsPurchased);
+        emit ticketPurchased(msg.sender, value.div(ticketPrice));
     }
 
 }

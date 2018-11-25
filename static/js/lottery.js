@@ -3,12 +3,29 @@ let Lottery = {
     web3Inst: null,
     contractInst: {},
     coinbase: null,
+    initializeEvent: null,
+    contractAddress: null,
+    
+    newWeb3: function() {
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+            console.log('metamask is installed')
+            Lottery.web3Inst = web3
+            Lottery.newContract()
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+            Lottery.web3Inst = web3
+            console.log('chode')
+            Lottery.newContract()
+        }
+    },
 
     newContract: function() {
         $.getJSON('build/contracts/Lottery.json', function(lottery) {
             let abi = lottery.abi
-            let address = lottery.networks['5777'].address
-            Lottery.contractInst.lotteryContract = Lottery.web3Inst.eth.contract(abi).at(address)
+            this.contractAddress = lottery.networks['5777'].address
+            Lottery.contractInst.lotteryContract = Lottery.web3Inst.eth.contract(abi).at(this.contractAddress)
             Lottery.listenForEvents()
             return Lottery.setCoinbase()
         })
@@ -17,19 +34,6 @@ let Lottery = {
     setCoinbase: function() {
         Lottery.coinbase = Lottery.web3Inst.eth.coinbase
         console.log('COINBASE SET')
-    },
-
-    newWeb3: function() {
-        if (typeof web3 !== 'undefined') {
-            var web3 = new Web3(web3.currentProvider);
-            Lottery.web3Inst = web3
-            Lottery.newContract()
-        } else {
-            // set the provider you want from Web3.providers
-            var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-            Lottery.web3Inst = web3
-            Lottery.newContract()
-        }
     },
 
     listenForEvents: function() {
@@ -44,6 +48,16 @@ let Lottery = {
             toBlock: 'latest'
         }).watch(function(error, event) {
             console.log(event)
+        })
+    },
+    
+    getData: function() {
+        Lottery.contractInst.lotteryContract.getData({from: Lottery.coinbase}, function(error, result) {
+            if (error) {
+                console.log(error)
+            } else {
+                console.log(result)
+            }
         })
     },
 
@@ -66,8 +80,6 @@ let Lottery = {
         let hours = $('#hours').val()
         let minutes = $('#minutes').val()
 
-        console.log(ticketPriceWei)
-
         let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
 
         Lottery.contractInst.lotteryContract.initialize(softWei, hardWei, villaPriceWei, ticketPriceWei, startTimeSeconds, {from: Lottery.coinbase, gas: 180000}, function(error, result) {
@@ -80,27 +92,48 @@ let Lottery = {
 
     },
 
-    getData: function() {
-        Lottery.contractInst.lotteryContract.getData({from: Lottery.coinbase}, function(error, result) {
+
+    buyTicket: function(amount) {
+
+        scopedWeb3 = this.web3Inst
+
+        Lottery.contractInst.lotteryContract.getTicketPrice.call({from: this.coinbase}, function(error, result) {
+            if (error) {
+                console.log(error)
+            } else {
+                let ticketPriceEther = result.c[0] / 10000
+                let ticketPriceWei = scopedWeb3.toWei(ticketPriceEther, 'ether')
+                let totalAmount = ticketPriceWei * amount
+
+                Lottery.contractInst.lotteryContract.buyTicket.sendTransaction({ from: this.coinbase, value: totalAmount, gas: 180000}, function(error, result) {
+                    if (error) {
+                        console.log(error)
+                    } else {
+                        console.log(result)
+                    }
+                })
+            }
+
+        })
+
+    }, 
+
+    getBuyerPositions: function() {
+        let account = this.coinbase
+        Lottery.contractInst.lotteryContract.getBuyerPositions.call(account, {from: account}, function(error, result) {
+            console.log(error)
+            console.log(result)
+        })
+    },
+
+    getBuyerPosition: function() {
+        Lottery.contractInst.lotteryContract.getbuyerPosition.call({from: this.coinbase}, function(error, result) {
             if (error) {
                 console.log(error)
             } else {
                 console.log(result)
             }
         })
-    },
-
-    buyTicket: function(amount) {
-        Lottery.contractInst.lotteryContract.getTicketPrice({from: this.coinbase}, function(error, result) {
-            console.log(result)
-        })
-        // Lottery.contractInst.lotteryContract.buyTicket({from: this.coinbase, amount: price, gas: 300000}, function(error, result) {
-        //     if (error) {
-        //         console.log(error)
-        //     } else {
-        //         console.log(result)
-        //     }
-        // })
     }
 }
 $(document).ready(function() {
