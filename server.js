@@ -1,27 +1,18 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const router = require('express').Router(); 
-var web3Helper = require('./js/lottery')
 
 let app = express()
 
 app.set('view engine', 'ejs')
 
 app.use('/', router)
-app.use(bodyParser)
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-router.get('/', function(req, res) {
-    web3Helper = new web3Helper
-    web3Helper.newWeb3().then(function (web3Inst) {
-        web3Helper.newContract()
-    })
-    res.render('index')
-})
+app.use(express.static(__dirname + '/static'))
 
-router.get('/test', function(req, res, next) {
-    console.log(web3Helper.contractInst)
+router.get('/', function(req, res) {
     res.render('index')
 })
 

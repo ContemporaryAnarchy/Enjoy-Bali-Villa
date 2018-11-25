@@ -5,14 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Enjoy Bali</title>
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="js/lottery.js"></script>
+    <script src="js/web3.min.js"></script>
+    <script src="js/truffle-contract.min.js"></script>
 </head>
-<body>
-    <div class="master">
-        Hello 
+<body class="master">
+    <div>
+        <div class="initialize_div">
+            <div class="welcome_div">
+                <h1 class="welcome_text">Welcome to Enjoy Bali Villa Lottery!</h1>
+                <h2 class="welcome_text">Create New Lottery</h2>
+            </div>
+        </div>
+        <div class="form_div">
+            <form class="form" id=form onSubmit="Lottery.initLotto()">
+                <p class="soft_cap">Soft Cap</p>
+                <input type="text" name="soft" id="soft">
+                <p class="hard_cap">Hard Cap</p>
+                <input type="text" name="hard" id="hard">
+                <p class="villa_price">Villa Price</p>
+                <input type="text" name="villa_price" id="villa_price">
+                <p class="ticket_price">Ticket Price</p>
+                <input type="text" name="ticket_price" id="ticket_price">
+                <p class="start_time">Start Time</p>
+                <input type="text" name="weeks" id="weeks" placeholder="weeks">
+                <input type="text" name="days" id="days" placeholder="days">
+                <input type="text" name="hours" id="hours" placeholder="hours">
+                <input type="text" name="minutes" id="minutes" placeholder="minutes">
+    
+                <input type="submit" class="initialize" value="initialize">
+            </form>
+        </div>
+        <div class="get_data_div">
+            <button class="get_data" id='data'>Get Data</button>
+        </div>
+        <div class="buy_ticket_div">
+            <form id="buy_ticket_form" class="buy_ticket_form">
+                <input type="text" placeholder="amount" id="ticket_amount">
+                <input class="buy_ticket" type="submit" id='buy_ticket' value="Buy Tickets">
+            </form>
+        </div>
     </div>
-    <a href="/test">
-        <button>Test</button>
-    </a>
+    
+    
     
 </body>
+<script>
+    $(document).ready(function(){
+        $('#form').submit(function(event) {
+            event.preventDefault()
+        })
+
+        $('#data').click(function(){
+            Lottery.getData()
+        })
+        
+        $('#buy_ticket_form').submit(function(event){
+            event.preventDefault()
+            let amount = $('#ticket_amount').val()
+            Lottery.buyTicket(amount);
+        })
+
+        
+
+    })
+</script>
 </html>
