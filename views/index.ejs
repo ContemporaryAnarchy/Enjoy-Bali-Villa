@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
     <script src="js/lottery.js"></script>
+    <script src="js/requests.js"></script>
     <script src="js/web3.min.js"></script>
     <script src="js/truffle-contract.min.js"></script>
 </head>
@@ -37,10 +38,8 @@
                 <input type="text" name="minutes" id="minutes" placeholder="minutes">
     
                 <input type="submit" class="initialize" value="initialize">
+
             </form>
-        </div>
-        <div class="get_data_div">
-            <button class="get_data" id='data'>Get Data</button>
         </div>
         <div class="buy_ticket_div">
             <form id="buy_ticket_form" class="buy_ticket_form">
@@ -48,8 +47,12 @@
                 <input class="buy_ticket" type="submit" id='buy_ticket' value="Buy Tickets">
             </form>
         </div>
-        <button class="get_position" id="get_position">Get Position</button>
         <button class="get_position_array" id="get_position_array">Get Position Array</button>
+        <button id="random_call">Random Call</button>
+        <button id="get_winner">Get Winner</button>
+        <button id="ticket_count">Your ticket count</button>
+        <button id="price">Ticket Price</button>
+        <button id="total">Total Tickets Purchased</button>
     </div>
     
     
@@ -70,16 +73,39 @@
             let amount = $('#ticket_amount').val()
             Lottery.buyTicket(amount);
         })
-
-        $('#get_position').click(function(event) {
-            event.preventDefault()
-            Lottery.getBuyerPositions()
-        })
         
         $('#get_position_array').click(function(event) {
             event.preventDefault()
-            Lottery.getBuyerPosition()
+            Lottery.getBuyerPositions()
         })
+
+        $('#random_call').click(function(event) {
+            event.preventDefault()
+            Lottery.queryRandomNumber();
+        })
+        
+        $('#get_winner').click(function(event) {
+            event.preventDefault()
+            Lottery.getWinner();
+        })
+
+        $('#ticket_count').click(function(event) {
+            event.preventDefault()
+            Lottery.ownerTicketCount();
+        })
+        
+        $('#price').click(function(event) {
+            event.preventDefault()
+            Lottery.getTicketPrice();
+        })
+        
+        $('#total').click(function(event) {
+            event.preventDefault()
+            Lottery.totalTicketsPurchased();
+        })
+
+
+
         
 
     })
