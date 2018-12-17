@@ -27,7 +27,7 @@ contract Lottery is usingOraclize {
     
     mapping (address => uint) ownerTicketCount;
     mapping (string => address) positionToOwner;
-    mapping(bytes32 => bool) validId;
+    mapping (bytes32 => bool) validId;
     
     modifier onlyOwner() {
         require(owner == msg.sender, "Not owner");
@@ -105,6 +105,22 @@ contract Lottery is usingOraclize {
 
         emit lottoInitialized(softCap, hardCap, villaPrice, ticketPrice, startTime);
         
+    }
+
+    /**
+    *   @dev Give a free first ticket to anyone who has been verified. verification is done off-chain and the owner calls the function. (OnlyOwner)
+     */
+    
+    function freeTicket(address buyer) public onlyOwner {
+        require(isInitialized, "Lottery is not initialized.");
+        require(ownerTicketCount[buyer] == 0, "Buyer already has tickets.");
+
+        ownerTicketCount[buyer] = ownerTicketCount[buyer].add(1);
+        ticketsPurchased = ticketsPurchased.add(1);
+
+        buyerPosition.push(buyer);
+
+        emit ticketPurchased(buyer, 1);
     }
 
     /**
