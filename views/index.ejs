@@ -27,8 +27,6 @@
                 <input type="text" name="soft" id="soft">
                 <p class="hard_cap">Hard Cap</p>
                 <input type="text" name="hard" id="hard">
-                <p class="villa_price">Villa Price</p>
-                <input type="text" name="villa_price" id="villa_price">
                 <p class="ticket_price">Ticket Price</p>
                 <input type="text" name="ticket_price" id="ticket_price">
                 <p class="start_time">Start Time</p>
@@ -47,9 +45,7 @@
                 <input class="buy_ticket" type="submit" id='buy_ticket' value="Buy Tickets">
             </form>
         </div>
-        <button class="get_position_array" id="get_position_array">Get Position Array</button>
-        <button id="random_call">Random Call</button>
-        <button id="get_winner">Get Winner</button>
+        <button id="draw_winner">Draw Lottery</button>
         <button id="ticket_count">Your ticket count</button>
         <button id="price">Ticket Price</button>
         <button id="total">Total Tickets Purchased</button>
@@ -75,19 +71,9 @@
             Lottery.buyTicket(amount);
         })
         
-        $('#get_position_array').click(function(event) {
-            event.preventDefault()
-            Lottery.getBuyerPositions()
-        })
-
-        $('#random_call').click(function(event) {
+        $('#draw_winner').click(function(event) {
             event.preventDefault()
             Lottery.drawWinner();
-        })
-        
-        $('#get_winner').click(function(event) {
-            event.preventDefault()
-            Lottery.getWinner();
         })
 
         $('#ticket_count').click(function(event) {

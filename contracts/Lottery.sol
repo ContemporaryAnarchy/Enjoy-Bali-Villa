@@ -17,7 +17,6 @@ contract Lottery is usingOraclize {
     uint constant gasLimitForOraclize = 175000;
     uint public softCap;
     uint public hardCap;
-    uint public villaPrice;
     uint public ticketPrice;
     uint public startTime;
     uint public ticketsPurchased;
@@ -39,7 +38,6 @@ contract Lottery is usingOraclize {
     event lottoInitialized (
         uint softCap,
         uint hardCap,
-        uint villaPrice,
         uint ticketPrice,
         uint startTime
     );
@@ -79,25 +77,24 @@ contract Lottery is usingOraclize {
         return (ownerTicketCount[_owner]);
     }
 
-    function getbuyerPositions() public view returns (address[] memory) {
-        return buyerPosition;
+    function getValues() public view returns (uint, uint, uint) {
+        return (softCap, hardCap, startTime);
     }
     
     /**
     *   @dev Initialize the lottery with the appropriate values. Only available to contract owner.
      */
 
-    function initialize(uint256 soft, uint256 hard, uint256 villa, uint ticket, uint256 time) public onlyOwner {
+    function initialize(uint256 soft, uint256 hard, uint ticket, uint256 time) public onlyOwner {
         require(!isInitialized, "Lottery is already initialized!");
         isInitialized = true;
         
         softCap = soft;
         hardCap = hard;
-        villaPrice = villa;
         ticketPrice = ticket;
         startTime = now + time;
 
-        emit lottoInitialized(softCap, hardCap, villaPrice, ticketPrice, startTime);
+        emit lottoInitialized(softCap, hardCap, ticketPrice, startTime);
         
     }
     
@@ -105,7 +102,6 @@ contract Lottery is usingOraclize {
         ticketsPurchased = 0;
         softCap = 0;
         hardCap = 0;
-        villaPrice = 0;
         ticketPrice = 0;
         startTime = 0;
         

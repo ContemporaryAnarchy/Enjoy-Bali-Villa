@@ -75,9 +75,6 @@ let Lottery = {
         let hard = $('#hard').val()
         let hardWei = this.web3Inst.toWei(hard, 'ether')
 
-        let villaPrice = $('#villa_price').val()
-        let villaPriceWei = this.web3Inst.toWei(villaPrice, 'ether')
-
         let ticketPrice = $('#ticket_price').val()
         let ticketPriceWei = this.web3Inst.toWei(ticketPrice, 'ether')
         
@@ -88,7 +85,7 @@ let Lottery = {
 
         let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
 
-        Lottery.contractInst.lotteryContract.initialize(softWei, hardWei, villaPriceWei, ticketPriceWei, startTimeSeconds, {from: this.web3Inst.eth.accounts[0], gas: 180000}, function(error, result) {
+        Lottery.contractInst.lotteryContract.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: this.web3Inst.eth.accounts[0], gas: 180000}, function(error, result) {
             if (error) {
                 console.log(error)
             } else {
@@ -135,11 +132,8 @@ let Lottery = {
         })
     },
 
-    //helper functions
-
-    getBuyerPositions: function () {
-        let account = this.web3Inst.eth.accounts[0]
-        Lottery.contractInst.lotteryContract.getbuyerPositions.call({ from: account }, function (error, result) {
+    withdraw: function() {
+        Lottery.contractInst.lotteryContract.withdraw({ from: this.web3Inst.eth.accounts[0]}, function(error, result) {
             if (error) {
                 console.log(error)
             } else {
@@ -147,6 +141,8 @@ let Lottery = {
             }
         })
     },
+
+    //helper functions
 
     ownerTicketCount: function() {
         Lottery.contractInst.lotteryContract.getTicketAmount.call(this.web3Inst.eth.accounts[0], function(error, result){
@@ -159,7 +155,6 @@ let Lottery = {
     },
 
     getTicketPrice: function() {
-        console.log(this.web3Inst.eth.accounts[0])
         Lottery.contractInst.lotteryContract.ticketPrice.call(function(error, result){
             if (error) {
                 console.log(error)
@@ -175,6 +170,16 @@ let Lottery = {
                 console.log(error)
             } else {
                 console.log(result.c[0])
+            }
+        })
+    },
+
+    getValues: function() {
+        Lottery.contractInst.lotteryContract.getValues.call(function(error, result) {
+            if (error) {
+                console.log(error)
+            } else {
+                console.log(result)
             }
         })
     },
