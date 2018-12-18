@@ -53,6 +53,7 @@
         <button id="ticket_count">Your ticket count</button>
         <button id="price">Ticket Price</button>
         <button id="total">Total Tickets Purchased</button>
+        <button id="init">Is initialized</button>
     </div>
     
     
@@ -81,7 +82,7 @@
 
         $('#random_call').click(function(event) {
             event.preventDefault()
-            Lottery.queryRandomNumber();
+            Lottery.drawWinner();
         })
         
         $('#get_winner').click(function(event) {
@@ -102,6 +103,11 @@
         $('#total').click(function(event) {
             event.preventDefault()
             Lottery.totalTicketsPurchased();
+        })
+
+        $('#init').click(function(event) {
+            event.preventDefault()
+            Lottery.isInitialized();
         })
 
 

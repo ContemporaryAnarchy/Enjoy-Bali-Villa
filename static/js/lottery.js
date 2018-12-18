@@ -60,6 +60,11 @@ let Lottery = {
         }).watch(function(error, event) {
             console.log(event)
         })
+        Lottery.contractInst.lotteryContract.winner({}, {
+            toBlock: 'latest'
+        }).watch(function(error, event) {
+            console.log(event)
+        })
     },
 
     initLotto: function() {
@@ -100,7 +105,7 @@ let Lottery = {
 
 
     buyTicket: function(amount) {
-        Lottery.contractInst.lotteryContract.ticketPrice.call({ from: this.web3Inst.eth.accounts[0]}, function(error, result) {
+        Lottery.contractInst.lotteryContract.ticketPrice.call(function(error, result) {
             if (error) {
                 console.log(error)
             } else {   
@@ -120,18 +125,8 @@ let Lottery = {
         })
     }, 
 
-    queryRandomNumber: function() {
-        Lottery.contractInst.lotteryContract.queryRandomNumber({ from: this.web3Inst.eth.accounts[0]}, function(error, result){
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result)
-            }
-        })
-    },
-
-    getWinner: function() {
-        Lottery.contractInst.lotteryContract.getWinner.call({ from: this.web3Inst.eth.accounts[0]}, function(error, result){
+    drawWinner: function() {
+        Lottery.contractInst.lotteryContract.drawWinner({ from: this.web3Inst.eth.accounts[0]}, function(error, result){
             if (error) {
                 console.log(error)
             } else {
@@ -164,6 +159,7 @@ let Lottery = {
     },
 
     getTicketPrice: function() {
+        console.log(this.web3Inst.eth.accounts[0])
         Lottery.contractInst.lotteryContract.ticketPrice.call(function(error, result){
             if (error) {
                 console.log(error)
@@ -181,7 +177,17 @@ let Lottery = {
                 console.log(result.c[0])
             }
         })
-    }
+    },
+
+    isInitialized: function() {
+        Lottery.contractInst.lotteryContract.isInitialized.call(function (error, result) {
+            if (error) {
+                console.log(error)
+            } else {
+                console.log(result)
+            }
+        })
+    } 
 }
 $(document).ready(function() {
     Lottery.newWeb3().then(function(works) {

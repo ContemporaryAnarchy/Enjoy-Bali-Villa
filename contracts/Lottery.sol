@@ -14,7 +14,6 @@ contract Lottery is usingOraclize {
     address public owner;
     address[] buyerPosition;
     
-    uint public randomNumber = 0;
     uint constant gasLimitForOraclize = 175000;
     uint public softCap;
     uint public hardCap;
@@ -23,10 +22,9 @@ contract Lottery is usingOraclize {
     uint public startTime;
     uint public ticketsPurchased;
     
-    bool isInitialized = false;
+    bool public isInitialized = false;
     
     mapping (address => uint) ownerTicketCount;
-    mapping (string => address) positionToOwner;
     mapping (bytes32 => bool) validId;
     
     modifier onlyOwner() {
@@ -85,10 +83,6 @@ contract Lottery is usingOraclize {
         return buyerPosition;
     }
     
-    function getRandomNumber() public view returns (uint) {
-        return randomNumber;
-    }
-    
     /**
     *   @dev Initialize the lottery with the appropriate values. Only available to contract owner.
      */
@@ -104,6 +98,23 @@ contract Lottery is usingOraclize {
         startTime = now + time;
 
         emit lottoInitialized(softCap, hardCap, villaPrice, ticketPrice, startTime);
+        
+    }
+    
+    function _resetBalances() private {
+        ticketsPurchased = 0;
+        softCap = 0;
+        hardCap = 0;
+        villaPrice = 0;
+        ticketPrice = 0;
+        startTime = 0;
+        
+        for (uint i = 0; i < buyerPosition.length; i++) {
+            ownerTicketCount[buyerPosition[i]] = 0; 
+        }
+        
+        buyerPosition.length = 0;
+        
         
     }
 
@@ -151,11 +162,14 @@ contract Lottery is usingOraclize {
         
         newProof = proof;
         
-        randomNumber = parseInt(result);
+        uint randomNumber = parseInt(result);
         
         emit logNumberReceived(randomNumber);
         
         validId[qId] = false;
+        
+        emit winner(getWinner(randomNumber));
+        
     }
     
     /**
@@ -163,17 +177,17 @@ contract Lottery is usingOraclize {
      * total amount of tickets purchased. Returns the value in the callback above and calls the winner. 
     */
     
-    function queryRandomNumber() public onlyOwner {
+    function drawWinner() public onlyOwner {
         require(isInitialized, "Lottery is not initialized");
-        isInitialized = false;
+        isInitialized = false;  
         
-        setQuery2();
-        setQuery123();
+        _setQuery2();   
+        _setQuery123();
         
         bytes32 qId = oraclize_query("nested", query123);
         
         validId[qId] = true;
-        
+
         emit logQuery("Oraclize query was sent. Standing by for response.");
     }
     
@@ -181,9 +195,8 @@ contract Lottery is usingOraclize {
      * @dev Get the lottery winner and return their address.
     */
     
-    function getWinner() public view onlyOwner returns (address) {
-        require(randomNumber != 0, "Random number not yet received!");
-        
+    function getWinner(uint randomNumber) private returns (address) {
+
         uint[] memory ownerTicketAmount = new uint[](buyerPosition.length);
         
         for (uint i = 0; i<buyerPosition.length; i++) {
@@ -191,20 +204,25 @@ contract Lottery is usingOraclize {
         }
         
         uint ticketSum = 0;
-        
+        address winnerAddr;
+
         for (uint p = 0; p<ownerTicketAmount.length; p++) {
             ticketSum = ticketSum.add(ownerTicketAmount[p]);
             if (ticketSum >= randomNumber) {
-                return buyerPosition[p];
+                winnerAddr = buyerPosition[p];
+                break;
             }
         }
+
+        _resetBalances();
+        return winnerAddr;
     }
     
     /**
      * @dev Each part of the Oraclize query to be concatenated.
     */
     
-    string query1 = "[URL] ['json(https://api.random.org/json-rpc/1/invoke).result.random[\"data\"]', '\\n{\"jsonrpc\": \"2.0\", \"method\": \"generateIntegers\", \"params\": { \"apiKey\": \"${[decrypt] BDgBuYVTvv7e6Sg9G/hdGCNokJ1Lw34gMQXbCbHffM78wyLLriWwSLX95KSjHUfInP7cTMmHC3ok2XZBd0kSEy3JvdrcqF56Gm9WcYwZ9XkGgL2L3r5s2j3zadHELxrVg7+wWvz+/T2PCy830/BQZ87Lv4Cs}\", \"n\": 1, \"min\": 1, \"max\": ";
+    string query1 = "[URL] ['json(https://api.random.org/json-rpc/1/invoke).result.random[\"data\"]', '\\n{\"jsonrpc\": \"2.0\", \"method\": \"generateIntegers\", \"params\": { \"apiKey\": \"${[decrypt] BPDi37UxtLw76aeli6SBqr9TutnyD0rKGFwjEBV8gkmY4FUuJ1mUJYScY+X/U7d/oJIx2uiHI9PbocKe6f4yMrt1+6dz4zR4On/EiL/STvMmBN4S9NGl3peL7p3JrPu1rT0wWhCyOYYtkuNyhOhL+ZTaf84e}\", \"n\": 1, \"min\": 1, \"max\": ";
     string query2;
     string query3 = ", \"replacement\": false${[identity] \"}\"}, \"id\": 1${[identity] \"}\"}']";
     
@@ -214,16 +232,23 @@ contract Lottery is usingOraclize {
      * @dev Setters and getters for queries.
     */
     
-    function setQuery2() private {
+    function _setQuery2() private {
         query2 = uint2str(ticketsPurchased);
     }
     
-    function setQuery123() private {
+    function _setQuery123() private {
         query123 = string(abi.encodePacked(query1, query2, query3));
     }
     
     function getQuery() public view returns(string) {
         return query123;
+    }
+    /**
+     * @dev Withdraw function. Only owner can withdraw contract funds.
+    */
+    
+    function withdraw() public onlyOwner {
+        msg.sender.transfer(address(this).balance);
     }
     
     /**
