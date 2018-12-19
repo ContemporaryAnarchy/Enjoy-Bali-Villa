@@ -16,6 +16,7 @@
     "body-parser": "^1.18.3",
     "chai": "^4.2.0",
     "ejs": "^2.6.1",
+    "event-stream": "^3.3.4",
     "express": "^4.16.4",
     "ganache-cli": "^6.2.3",
     "mocha": "^5.2.0",
