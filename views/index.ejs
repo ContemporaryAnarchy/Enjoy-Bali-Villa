@@ -108,38 +108,20 @@
                         <input type="text" class="form-control form-control-sm" name="minutes" id="minutes" placeholder="minutes">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-block mt-4 initialize">Initialize</button>
+                <button type="submit" class="btn btn-block initialize mt-5">Initialize</button>
             </form>
         </div>
     
         <div class="right_side d-flex flex-column justify-content-between">
-            <div class="lottery-info">
-                <h2 class="welcome_text mb-4">Lottery Information</h2>
-                <div class="isinit mb-3">
-                    Lottery is not initialized.
-                </div>
-                <div class="mb-3">
-                    Villa: <span>-</span>
-                </div>
-                <div class="ticket_price mb-3">
-                    Ticket Price: <span>-</span>
-                </div>
-                <div class="your_tickets mb-3">
-                    Your Tickets: <span>-</span>
-                </div>
-                <div class="total_players mb-3">
-                    Total Players: <span>-</span>
-                </div>
-                <div class="players_list">
-                    Player List: <span>-</span>
-                </div>
-            
-            </div>
-
             <div class="buy_ticket_div">
+            
                 <form id="buy_ticket_form">
                     <div class="form-group">
                         <h2 class="mb-5 welcome_text">Buy Tickets</h2>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div>Your Tickets:</div>
+                            <div id="your_tickets">-</div>
+                        </div>
                         <label for="ticket_amount">Amount</label>
                         <input type="text" id="ticket_amount" class="form-control form-control-sm">
                         <button class="buy_tickets btn btn-block mt-4" type="submit" id='buy_ticket'>Buy Tickets</button>
@@ -147,21 +129,53 @@
                 </form>
             </div>
 
-            <div class="call_lottery">
-                <button class="draw_winner btn btn-block mt-3 mb-3" id="draw_winner">Draw Winner</button>
+            <div class="lottery-info">
+                <h2 class="welcome_text mb-4">Lottery Information</h2>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Lottery Active:</div>
+                    <div id="lottery_active">False</div>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Villa:</div>
+                    <div>3 Bedrooms With A View</div>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Soft Cap:</div>
+                    <div id="soft_cap">-</div>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Hard Cap:</div>
+                    <div id="hard_cap">-</div>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Ticket Price:</div>
+                    <div id="ticket_price">-</div>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Tickets Purchased:</div>
+                    <div id="tickets_purchased">-</div>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Total Players:</div>
+                    <div id="total_players">-</div>
+                </div>
+                
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>Start Time:</div>
+                    <div id="start_time">-</div>
+                </div>
+                <button class="draw_winner btn btn-block mt-5" id="draw_winner">Draw Winner</button>
+            
             </div>
+
         </div>
 
     </div>
 
-    <button id="ticket_count">Your ticket count</button>
-    <button id="price">Ticket Price</button>
-    <button id="total">Total Tickets Purchased</button>
-    <button id="init">Is initialized</button>
-    <form id="free_ticket_form">
+    <!-- <form id="free_ticket_form">
         <input type="text" placeholder="address" id="address">
         <input type="submit" value="Get Free Ticket" id="free_ticket">
-    </form>
+    </form> -->
     
     
     
@@ -176,10 +190,6 @@
             event.preventDefault()
         })
 
-        $('#data').click(function(){
-            Lottery.getData()
-        })
-        
         $('#buy_ticket_form').submit(function(event){
             event.preventDefault()
             let amount = $('#ticket_amount').val()
@@ -191,36 +201,20 @@
             let addy = $('#address').val()
             giveFreeticket(addy);
         })
+
+        $('#data').click(function(){
+            Lottery.getData()
+        })
+
+        $('#init').click(function (event) {
+            event.preventDefault()
+            Lottery.isInitialized();
+        })
         
         $('#draw_winner').click(function(event) {
             event.preventDefault()
             Lottery.drawWinner();
         })
-
-        $('#ticket_count').click(function(event) {
-            event.preventDefault()
-            Lottery.ownerTicketCount();
-        })
-        
-        $('#price').click(function(event) {
-            event.preventDefault()
-            Lottery.getTicketPrice();
-        })
-        
-        $('#total').click(function(event) {
-            event.preventDefault()
-            Lottery.totalTicketsPurchased();
-        })
-
-        $('#init').click(function(event) {
-            event.preventDefault()
-            Lottery.isInitialized();
-        })
-
-
-
-        
-
     })
 </script>
 </html>

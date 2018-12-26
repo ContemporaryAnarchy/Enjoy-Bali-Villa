@@ -43,6 +43,7 @@
 .full_width {
     width: 55%;
     margin: 0px auto;
+    margin-bottom: 40px;
 }
 .form_div {
     width: 47%;

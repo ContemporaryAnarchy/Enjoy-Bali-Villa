@@ -22,6 +22,7 @@ contract Lottery is usingOraclize {
     uint public ticketPrice;
     uint public startTime;
     uint public ticketsPurchased;
+    uint public playerCount;
     
     bool public isInitialized = false;
     
@@ -125,6 +126,8 @@ contract Lottery is usingOraclize {
         require(isInitialized, "Lottery is not initialized.");
         require(ownerTicketCount[buyer] == 0, "Buyer already has tickets.");
 
+        playerCount = playerCount.add(1);
+
         ownerTicketCount[buyer] = ownerTicketCount[buyer].add(1);
         ticketsPurchased = ticketsPurchased.add(1);
 
@@ -144,6 +147,8 @@ contract Lottery is usingOraclize {
         uint value = msg.value.div(ticketPrice);
         ownerTicketCount[msg.sender] = ownerTicketCount[msg.sender].add(value);
         ticketsPurchased = ticketsPurchased.add(value);
+
+        playerCount = playerCount.add(1);
 
         //instead of having ticket IDs, this design tracks the order in which addresses participate.
         buyerPosition.push(msg.sender);

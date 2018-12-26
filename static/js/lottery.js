@@ -74,6 +74,7 @@ let Lottery = {
         const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
             toBlock: 'latest'
         }).watch()
+        
         console.log(lottoInitialized)
 
         Lottery.contractInstance.ticketPurchased({}, {
