@@ -15,6 +15,7 @@ let Lottery = {
         await Lottery.newWeb3()
         await Lottery.newContract()
         await Lottery.render()
+        await Lottery.retrieveValues()
     },
 
     newWeb3: async () => {
@@ -47,7 +48,7 @@ let Lottery = {
 
         //set current account
         Lottery.account = web3.eth.accounts[0]
-        $('#account').html(this.account)
+        $('#account').html(Lottery.account)
 
         //load the smart contract
         const contract = await Lottery.contracts.lotteryContract.deployed()
@@ -69,12 +70,65 @@ let Lottery = {
         }
     },
 
+    retrieveValues: async () => {
+        let softCap = await Lottery.softCap()
+        console.log(softCap)
+        let hardCap = await Lottery.hardCap()
+        let startTimeUnix = await Lottery.startTime()
+        Lottery.countdown(startTimeUnix)
+
+        let ticketPrice = await Lottery.getTicketPrice()
+        let isInitialized = await Lottery.isInitialized()
+        let totalPlayersArray = await Lottery.playerCount()
+        let totalPlayers = totalPlayersArray.c[0]
+        let totalTickets = await Lottery.totalTicketsPurchased()
+        let yourTickets = await Lottery.ownerTicketCount()
+
+        
+        $('#soft_cap').html(softCap)
+        $('#hard_cap').html(hardCap)
+        $('#ticket_price').html(web3.fromWei(ticketPrice, 'ether'))
+        $('#tickets_purchased').html(totalTickets)
+        $('#total_players').html(totalPlayers)
+        $('#your_tickets').html(yourTickets)
+        if (isInitialized) {
+            $('#lottery_active').html('True')
+        } 
+        
+    },
+
+    countdown: (unix) => {
+        let countDown = setInterval(() => {
+            let now = new Date().getTime()
+            let end = (parseInt(unix) * 1000)
+            let distance = end - now
+            console.log(distance)
+            let totalSeconds = distance / 1000
+
+            let weeks = Math.floor(totalSeconds / 604800)
+            let days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
+            let hours = Math.floor((totalSeconds % (days * 86400 + weeks * 604800)) / 3600)
+            let minutes = Math.floor((totalSeconds % (hours * 3600 + days * 86400 + weeks * 604800)) / 60)
+            let seconds = Math.floor(totalSeconds % (minutes * 60 + hours * 3600 + days * 86400 + weeks * 604800))
+
+            let startTime = `${weeks} weeks, ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`
+            $('#start_time').html(startTime)
+
+            if (distance < 0) {
+                clearInterval(countDown)
+                $('#start_time').html(0)
+            }
+
+        }, 1000)
+    },
+
+
     // test out async await pattern here
     listenForEvents: async () => {
         const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
             toBlock: 'latest'
         }).watch()
-        
+
         console.log(lottoInitialized)
 
         Lottery.contractInstance.ticketPurchased({}, {
@@ -102,13 +156,13 @@ let Lottery = {
     initLotto: async() => {
         //.call inspects the return value of the function 
         let soft = $('#soft').val()
-        let softWei = this.web3Inst.toWei(soft, 'ether')
+        let softWei = web3.toWei(soft, 'ether')
 
         let hard = $('#hard').val()
-        let hardWei = this.web3Inst.toWei(hard, 'ether')
+        let hardWei = web3.toWei(hard, 'ether')
 
-        let ticketPrice = $('#ticket_price').val()
-        let ticketPriceWei = this.web3Inst.toWei(ticketPrice, 'ether')
+        let ticketPrice = $('#ticket-price').val()
+        let ticketPriceWei = web3.toWei(ticketPrice, 'ether')
         
         let weeks = $('#weeks').val()
         let days = $('#days').val()
@@ -117,7 +171,13 @@ let Lottery = {
 
         let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
 
-        const txHash = await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: this.account})
+        const txHash = await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: Lottery.account})
+
+        const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
+            toBlock: 'latest'
+        }).watch()
+
+        console.log(lottoInitialized)
     },
 
     //Use raw transaction 
@@ -134,44 +194,59 @@ let Lottery = {
         let ticketPriceWei = ticketPrice.c[0] * 1e14
         let totalAmount = ticketPriceWei * amount
 
-        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({from: this.account, value: totalAmount, gas: 180000})
+        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({from: Lottery.account, value: totalAmount, gas: 180000})
 
         console.log(txHash)
     }, 
 
     drawWinner: async() => {
-        await Lottery.contractInstance.drawWinner({ from: this.web3Inst.eth.accounts[0]})
+        await Lottery.contractInstance.drawWinner({ from: web3.eth.accounts[0]})
     },
 
     withdraw: async() => {
-        await Lottery.contractInstance.withdraw({ from: this.web3Inst.eth.accounts[0]})
+        await Lottery.contractInstance.withdraw({ from: web3.eth.accounts[0]})
     },
 
     //helper functions
 
     ownerTicketCount: async() => {
-        const result = await Lottery.contractInstance.getTicketAmount.call(this.web3Inst.eth.accounts[0])
-        console.log(result.c[0])
+        const result = await Lottery.contractInstance.getTicketAmount.call(web3.eth.accounts[0])
+        return result.c[0]
     },
 
     getTicketPrice: async() => {
         const result = await Lottery.contractInstance.ticketPrice.call()
-        console.log(result.c[0] * 1e14)
+        return result.c[0] * 1e14
     },
 
     totalTicketsPurchased: async() => {
         const result = await Lottery.contractInstance.ticketsPurchased.call()
-        console.log(result.c[0])
+        return result.c[0]
     },
 
-    getValues: async() => {
-        const result = await Lottery.contractInstance.getValues.call()
-        console.log(result)
+    softCap: async() => {
+        const result = await Lottery.contractInstance.softCap.call()
+        return result.c[0] / 1e5
+    },
+    
+    hardCap: async() => {
+        const result = await Lottery.contractInstance.hardCap.call()
+        return result.c[0] / 1e5
+    },
+
+    startTime: async() => {
+        const result = await Lottery.contractInstance.startTime.call()
+        return result
     },
 
     isInitialized: async() => {
         const result = await Lottery.contractInstance.isInitialized.call()
-        console.log(result)
-    } 
+        return result
+    },
+
+    playerCount: async() => {
+        const result = await Lottery.contractInstance.playerCount.call()
+        return result
+    }
 }
 

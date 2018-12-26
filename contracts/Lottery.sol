@@ -108,6 +108,7 @@ contract Lottery is usingOraclize {
         hardCap = 0;
         ticketPrice = 0;
         startTime = 0;
+        playerCount = 0;
         
         for (uint i = 0; i < buyerPosition.length; i++) {
             ownerTicketCount[buyerPosition[i]] = 0; 
