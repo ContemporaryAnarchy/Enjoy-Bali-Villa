@@ -6,57 +6,172 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Enjoy Bali</title>
     <link rel="stylesheet" type="text/css" href="/css/index.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
     <script src="js/lottery.js"></script>
+    <script src="js/lotteryABI.js"></script>
     <script src="js/requests.js"></script>
+    <script src="js/ethereumjs-tx.js"></script>
     <script src="js/web3.min.js"></script>
     <script src="js/truffle-contract.min.js"></script>
+    
+
 </head>
 <body class="master">
-    <div>
-        <div class="initialize_div">
-            <div class="welcome_div">
-                <h1 class="welcome_text">Welcome to Enjoy Bali Villa Lottery!</h1>
-                <h2 class="welcome_text">Create New Lottery</h2>
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top nav-bg" style="background-color: #e3f2fd;">
+        <a class="navbar-brand ml-5" href="#">Enjoy Bali Villa Lottery</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-ul justify-content-end mr-5">
+                <li class="nav-item active">
+                    <a class="nav-link mr-3" href="#">Admin<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">User</a>
+                </li>
+            </ul>
+        </div>
+    </nav>      
+    <h1 class="welcome_text mt-5 mb-3">Admin Dashboard</h1>
+    <div class="d-flex mx-auto welcome_div justify-content-center">
+        <div class="loader mr-3" id="loader"></div>
+        <h2 class="welcome_text">Logged in as: <span id="account">0x...</span></h2>
+    </div>
+
+    <div class="d-flex justify-content-between full_width" id="content">
+        <div class="form_div">
+            <h2 class="welcome_text">Create New Lottery</h2>
+            <label class="villa_text mb-4 mt-4">Select a Villa</label>
+            <div id="carouselExampleIndicators" class="carousel slide mb-3" data-ride="carousel" data-interval="false">
+                <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                </ol>
+                <div class="carousel-inner">
+                    <div class="carousel-item active villa">
+                        <img class="d-block w-100" src="/images/balivilla.jpg" alt="First slide">
+                    </div>
+                    <div class="carousel-item villa">
+                        <img class="d-block w-100" src="/images/balivilla2.jpg" alt="Second slide">
+                    </div>
+                    <div class="carousel-item villa">
+                        <img class="d-block w-100" src="/images/balivilla3.jpg" alt="Third slide">
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+            <form class="form mx-auto" id=form onSubmit="Lottery.initLotto()">
+                <div class="form-group">
+                    <label for="soft">Soft Cap (ETH)</label>
+                    <input type="text" class="form-control form-control-sm" name="soft" id="soft">
+                </div>
+                <div class="form-group">
+                    <label for="hard">Hard Cap (ETH)</label>
+                    <input type="text" class="form-control form-control-sm" name="hard" id="hard">
+                </div>
+                <div class="form-group">
+                    <label for="ticket_price">Ticket Price (ETH)</label>
+                    <input type="text" class="form-control form-control-sm" name="ticket_price" id="ticket_price">
+                </div>
+                <label for="#">Start Time</label>
+                <div class="form-row">
+                    <div class="col-6">
+                        <input type="text" class="form-control form-control-sm mb-3" name="weeks" id="weeks" placeholder="weeks">
+                    </div>
+                    <div class="col-6">
+                        <input type="text" class="form-control form-control-sm mb-3" name="days" id="days" placeholder="days">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-6">
+                        <input type="text" class="form-control form-control-sm mb-3" name="hours" id="hours" placeholder="hours">
+                    </div>
+                    <div class="col-6">
+                        <input type="text" class="form-control form-control-sm" name="minutes" id="minutes" placeholder="minutes">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-block mt-4 initialize">Initialize</button>
+            </form>
+        </div>
+    
+        <div class="right_side d-flex flex-column justify-content-between">
+            <div class="lottery-info">
+                <h2 class="welcome_text mb-4">Lottery Information</h2>
+                <div class="isinit mb-3">
+                    Lottery is not initialized.
+                </div>
+                <div class="mb-3">
+                    Villa: <span>-</span>
+                </div>
+                <div class="ticket_price mb-3">
+                    Ticket Price: <span>-</span>
+                </div>
+                <div class="your_tickets mb-3">
+                    Your Tickets: <span>-</span>
+                </div>
+                <div class="total_players mb-3">
+                    Total Players: <span>-</span>
+                </div>
+                <div class="players_list">
+                    Player List: <span>-</span>
+                </div>
+            
+            </div>
+
+            <div class="buy_ticket_div">
+                <form id="buy_ticket_form">
+                    <div class="form-group">
+                        <h2 class="mb-5 welcome_text">Buy Tickets</h2>
+                        <label for="ticket_amount">Amount</label>
+                        <input type="text" id="ticket_amount" class="form-control form-control-sm">
+                        <button class="buy_tickets btn btn-block mt-4" type="submit" id='buy_ticket'>Buy Tickets</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="call_lottery">
+                <button class="draw_winner btn btn-block mt-3 mb-3" id="draw_winner">Draw Winner</button>
             </div>
         </div>
-        <div class="form_div">
-            <form class="form" id=form onSubmit="Lottery.initLotto()">
-                <p class="soft_cap">Soft Cap</p>
-                <input type="text" name="soft" id="soft">
-                <p class="hard_cap">Hard Cap</p>
-                <input type="text" name="hard" id="hard">
-                <p class="ticket_price">Ticket Price</p>
-                <input type="text" name="ticket_price" id="ticket_price">
-                <p class="start_time">Start Time</p>
-                <input type="text" name="weeks" id="weeks" placeholder="weeks">
-                <input type="text" name="days" id="days" placeholder="days">
-                <input type="text" name="hours" id="hours" placeholder="hours">
-                <input type="text" name="minutes" id="minutes" placeholder="minutes">
-    
-                <input type="submit" class="initialize" value="initialize">
 
-            </form>
-        </div>
-        <div class="buy_ticket_div">
-            <form id="buy_ticket_form" class="buy_ticket_form">
-                <input type="text" placeholder="amount" id="ticket_amount">
-                <input class="buy_ticket" type="submit" id='buy_ticket' value="Buy Tickets">
-            </form>
-        </div>
-        <button id="draw_winner">Draw Lottery</button>
-        <button id="ticket_count">Your ticket count</button>
-        <button id="price">Ticket Price</button>
-        <button id="total">Total Tickets Purchased</button>
-        <button id="init">Is initialized</button>
     </div>
+
+    <button id="ticket_count">Your ticket count</button>
+    <button id="price">Ticket Price</button>
+    <button id="total">Total Tickets Purchased</button>
+    <button id="init">Is initialized</button>
+    <form id="free_ticket_form">
+        <input type="text" placeholder="address" id="address">
+        <input type="submit" value="Get Free Ticket" id="free_ticket">
+    </form>
     
     
     
 </body>
 <script>
     $(document).ready(function(){
+        $('#myCarousel').on('slid.bs.carousel', function () {
+            console.log('works great')
+        })
+
         $('#form').submit(function(event) {
             event.preventDefault()
         })
@@ -69,6 +184,12 @@
             event.preventDefault()
             let amount = $('#ticket_amount').val()
             Lottery.buyTicket(amount);
+        })
+
+        $('#free_ticket_form').submit(function(event){
+            event.preventDefault()
+            let addy = $('#address').val()
+            giveFreeticket(addy);
         })
         
         $('#draw_winner').click(function(event) {

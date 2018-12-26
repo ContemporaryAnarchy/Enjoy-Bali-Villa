@@ -14,6 +14,8 @@ contract Lottery is usingOraclize {
     address public owner;
     address[] buyerPosition;
     
+    uint public testValue;
+
     uint constant gasLimitForOraclize = 175000;
     uint public softCap;
     uint public hardCap;
@@ -65,6 +67,7 @@ contract Lottery is usingOraclize {
     
     constructor() public payable {
         owner = msg.sender;
+        testValue = 1;
         oraclize_setCustomGasPrice(1000000000 wei);
         oraclize_setProof(proofType_TLSNotary | proofStorage_IPFS);
     }

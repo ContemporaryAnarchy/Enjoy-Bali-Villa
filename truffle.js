@@ -1,6 +1,7 @@
 const { readFileSync } = require('fs')
 const path = require('path')
 const HDWalletProvider = require('truffle-hdwallet-provider')
+require('dotenv').config();
 
 module.exports = {
   networks: {
@@ -15,6 +16,12 @@ module.exports = {
       },
       network_id: 3,
       gasPrice: 25000000000
+    }
+  },
+  solc: {
+    optimizer: {
+      enabled: true,
+      runs: 200
     }
   }
 };

@@ -13,6 +13,10 @@ app.use(bodyParser.json())
 app.use(express.static(__dirname + '/static'))
 
 router.get('/', function(req, res) {
+    res.redirect('/admin')
+})
+
+router.get('/admin', function(req, res) {
     res.render('index')
 })
 

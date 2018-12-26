@@ -1,24 +1,73 @@
 .master {
-    background: lightblue;
+    background: #FCFCD4;
     height: 100vh;
-    padding-top: 30px;
+}
+.nav-ul {
+    width: 100%;
+}
+.loader {
+  border: 6px solid #f3f3f3; /* Light grey */
+  border-top: 6px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 .welcome_div {
-    margin: 0px auto;
+    width: 50%;
 }
 .welcome_text {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
     text-align: center;
 }
-.initialize_div {
+.villa_text {
+    text-align: center;
+}
+.carousel {
+    width: 100%;
+    margin: 0px auto;
+    height: 236px;
+}
+.villa {
+    height: 236px;
+}
+.villa_image {
+    object-fit: contain;
+    width: 100%;
+}
+.full_width {
+    width: 55%;
     margin: 0px auto;
 }
 .form_div {
-    width: 40%;
-    margin: 0px auto;
-    margin-top: 50px;
+    width: 47%;
+    margin-top: 30px;
+    border-radius: 5px;
+    padding: 25px 25px 25px 25px;
+    background-color: #EAFDFF;
 }
-.form {
-    width: 100%;
+.right_side {
+    width: 47%;
+}
+.buy_ticket_div, .lottery-info, .call_lottery {
+    margin-top: 30px;
+    border-radius: 5px;
+    padding: 25px 25px 25px 25px;
+    background-color: #EAFDFF;
+}
+.nav-bg {
+    background-color: #ADD8E6 !important;
+
+}
+
+.initialize, .buy_tickets {
+    background-color: #ADD8E6;
+}
+.draw_winner {
+    background-color: lightcoral;
 }

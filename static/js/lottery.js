@@ -1,73 +1,104 @@
+$(document).ready(function () {
+    Lottery.init()
+});
+
 let Lottery = {
 
     web3Inst: null,
-    contractInst: {},
+    contracts: {},
+    loading: false,
     initializeEvent: null,
-    contractAddress: null,
+    contractInstance: null,
     account: null,
     
-    newWeb3: function() {
-        return new Promise(async function(resolve, reject) {
-            if (window.ethereum) {
-                window.web3 = new Web3(ethereum);
-                try {
-                    await ethereum.enable();
-                    Lottery.web3Inst = window.web3
-                    Lottery.newContract()
+    init: async() => {
+        await Lottery.newWeb3()
+        await Lottery.newContract()
+        await Lottery.render()
+    },
 
-                    resolve('works')
-                } catch (error) {
-                    console.log('denied')
-                }
-            } else {
-                window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    newWeb3: async () => {
+        if (window.ethereum) {
+            window.web3 = new Web3(ethereum);
+            try {
+                await ethereum.enable();
                 Lottery.web3Inst = window.web3
-                Lottery.newContract()
-
-                resolve('works')
+            } catch (error) {
+                console.log('denied')
             }
+        } else {
+            window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+            Lottery.web3Inst = window.web3
+        }
+    },
+    
+    newContract: async () => {
+        const lottery = await $.getJSON('build/contracts/Lottery.json')
+        Lottery.contracts.lotteryContract = TruffleContract(lottery)
+        Lottery.contracts.lotteryContract.setProvider(web3.currentProvider)
+    },
 
+    render: async() => {
+        if (Lottery.loading) {
+            return
+        }   
+
+        Lottery.setLoading(true)
+
+        //set current account
+        Lottery.account = web3.eth.accounts[0]
+        $('#account').html(this.account)
+
+        //load the smart contract
+        const contract = await Lottery.contracts.lotteryContract.deployed()
+        Lottery.contractInstance = contract
+
+        Lottery.setLoading(false)
+    },
+
+    setLoading: (boolean) => {
+        Lottery.loading = boolean
+        const loader = $('#loader')
+        const content = $('#content')
+        if (boolean) {
+            loader.show()
+            content.hide()
+        } else {
+            loader.hide()
+            content.show()
+        }
+    },
+
+    // test out async await pattern here
+    listenForEvents: async () => {
+        const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
+            toBlock: 'latest'
+        }).watch()
+        console.log(lottoInitialized)
+
+        Lottery.contractInstance.ticketPurchased({}, {
+            toBlock: 'latest'
+        }).watch(function(error, event) {
+            console.log(event)
+        })
+        Lottery.contractInstance.logNumberReceived({}, {
+            toBlock: 'latest'
+        }).watch(function(error, event) {
+            console.log(event)
+        })
+        Lottery.contractInstance.logQuery({}, {
+            toBlock: 'latest'
+        }).watch(function(error, event) {
+            console.log(event)
+        })
+        Lottery.contractInstance.winner({}, {
+            toBlock: 'latest'
+        }).watch(function(error, event) {
+            console.log(event)
         })
     },
 
-    newContract: function() {
-        $.getJSON('build/contracts/Lottery.json', function(lottery) {
-            let abi = lottery.abi
-            this.contractAddress = lottery.networks['3'].address
-            Lottery.contractInst.lotteryContract = Lottery.web3Inst.eth.contract(abi).at(this.contractAddress)
-            return Lottery.listenForEvents()
-        })
-    },
-
-    listenForEvents: function() {
-        Lottery.contractInst.lotteryContract.lottoInitialized({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
-        })
-        Lottery.contractInst.lotteryContract.ticketPurchased({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
-        })
-        Lottery.contractInst.lotteryContract.logNumberReceived({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
-        })
-        Lottery.contractInst.lotteryContract.logQuery({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
-        })
-        Lottery.contractInst.lotteryContract.winner({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
-        })
-    },
-
-    initLotto: function() {
+    initLotto: async() => {
         //.call inspects the return value of the function 
         let soft = $('#soft').val()
         let softWei = this.web3Inst.toWei(soft, 'ether')
@@ -85,14 +116,7 @@ let Lottery = {
 
         let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
 
-        Lottery.contractInst.lotteryContract.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: this.web3Inst.eth.accounts[0], gas: 180000}, function(error, result) {
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result)
-            }
-        })
-
+        const txHash = await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: this.account})
     },
 
     //Use raw transaction 
@@ -101,104 +125,52 @@ let Lottery = {
     },
 
 
-    buyTicket: function(amount) {
-        Lottery.contractInst.lotteryContract.ticketPrice.call(function(error, result) {
-            if (error) {
-                console.log(error)
-            } else {   
-                let ticketPriceWei = result.c[0] * 1e14
-                console.log(ticketPriceWei)
-                let totalAmount = ticketPriceWei * amount
-                console.log(totalAmount)
+    buyTicket: async(amount) => {
+        const ticketPrice = await Lottery.contractInstance.ticketPrice.call()
 
-                Lottery.contractInst.lotteryContract.buyTicket.sendTransaction({ from: this.account, value: totalAmount, gas: 180000}, function(error, result) {
-                    if (error) {
-                        console.log(error)
-                    } else {
-                        console.log(result)
-                    }
-                })
-            }
-        })
+        console.log(ticketPrice)
+
+        let ticketPriceWei = ticketPrice.c[0] * 1e14
+        let totalAmount = ticketPriceWei * amount
+
+        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({from: this.account, value: totalAmount, gas: 180000})
+
+        console.log(txHash)
     }, 
 
-    drawWinner: function() {
-        Lottery.contractInst.lotteryContract.drawWinner({ from: this.web3Inst.eth.accounts[0]}, function(error, result){
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result)
-            }
-        })
+    drawWinner: async() => {
+        await Lottery.contractInstance.drawWinner({ from: this.web3Inst.eth.accounts[0]})
     },
 
-    withdraw: function() {
-        Lottery.contractInst.lotteryContract.withdraw({ from: this.web3Inst.eth.accounts[0]}, function(error, result) {
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result)
-            }
-        })
+    withdraw: async() => {
+        await Lottery.contractInstance.withdraw({ from: this.web3Inst.eth.accounts[0]})
     },
 
     //helper functions
 
-    ownerTicketCount: function() {
-        Lottery.contractInst.lotteryContract.getTicketAmount.call(this.web3Inst.eth.accounts[0], function(error, result){
-            if (error) {
-                console.log(error)
-            } else  {
-                console.log(result.c[0])
-            }
-        })
+    ownerTicketCount: async() => {
+        const result = await Lottery.contractInstance.getTicketAmount.call(this.web3Inst.eth.accounts[0])
+        console.log(result.c[0])
     },
 
-    getTicketPrice: function() {
-        Lottery.contractInst.lotteryContract.ticketPrice.call(function(error, result){
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result.c[0] * 1e14)
-            }
-        })
+    getTicketPrice: async() => {
+        const result = await Lottery.contractInstance.ticketPrice.call()
+        console.log(result.c[0] * 1e14)
     },
 
-    totalTicketsPurchased: function() {
-        Lottery.contractInst.lotteryContract.ticketsPurchased.call(function (error, result) {
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result.c[0])
-            }
-        })
+    totalTicketsPurchased: async() => {
+        const result = await Lottery.contractInstance.ticketsPurchased.call()
+        console.log(result.c[0])
     },
 
-    getValues: function() {
-        Lottery.contractInst.lotteryContract.getValues.call(function(error, result) {
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result)
-            }
-        })
+    getValues: async() => {
+        const result = await Lottery.contractInstance.getValues.call()
+        console.log(result)
     },
 
-    isInitialized: function() {
-        Lottery.contractInst.lotteryContract.isInitialized.call(function (error, result) {
-            if (error) {
-                console.log(error)
-            } else {
-                console.log(result)
-            }
-        })
+    isInitialized: async() => {
+        const result = await Lottery.contractInstance.isInitialized.call()
+        console.log(result)
     } 
 }
-$(document).ready(function() {
-    Lottery.newWeb3().then(function(works) {
-        Lottery.web3Inst.eth.getAccounts((err, response) => {
-            Lottery.account = response
-        })
-    })
-    
-});
+
