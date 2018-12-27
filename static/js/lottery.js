@@ -15,7 +15,8 @@ let Lottery = {
         await Lottery.newWeb3()
         await Lottery.newContract()
         await Lottery.render()
-        await Lottery.retrieveValues()
+        await Lottery.setBalances()
+        Lottery.listenForEvents()
     },
 
     newWeb3: async () => {
@@ -85,17 +86,32 @@ let Lottery = {
 
         Lottery.countdown(startTimeUnix, isInitialized)
         
-        $('#balance').html(contractBalance)
-        if (isInitialized) {
-            $('#soft_cap').html(softCap)
-            $('#hard_cap').html(hardCap)
-            $('#ticket_price').html(web3.fromWei(ticketPrice, 'ether'))
-            $('#tickets_purchased').html(totalTickets)
-            $('#total_players').html(totalPlayers)
-            $('#your_tickets').html(yourTickets)
+        return {
+                isInitialized: isInitialized,
+                softCap: softCap,
+                hardCap: hardCap,
+                ticketPrice: ticketPrice,
+                totalTickets: totalTickets,
+                totalPlayers: totalPlayers,
+                yourTickets: yourTickets,
+                contractBalance: contractBalance
+            }  
+        
+    },
+
+    setBalances: async () => {
+        const values = await Lottery.retrieveValues()
+
+        $('#balance').html(values.contractBalance)
+        if (values.isInitialized) {
+            $('#soft_cap').html(values.softCap)
+            $('#hard_cap').html(values.hardCap)
+            $('#ticket_price').html(web3.fromWei(values.ticketPrice, 'ether'))
+            $('#tickets_purchased').html(values.totalTickets)
+            $('#total_players').html(values.totalPlayers)
+            $('#your_tickets').html(values.yourTickets)
             $('#lottery_active').html('True')
         }
-        
     },
 
     countdown: (unix, initialized) => {
@@ -132,32 +148,31 @@ let Lottery = {
 
 
     // test out async await pattern here
-    listenForEvents: async () => {
-        const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
+    listenForEvents: () => {
+        Lottery.contractInstance.lottoInitialized({}, {
             toBlock: 'latest'
-        }).watch()
-
-        console.log(lottoInitialized)
-
+        }).watch(function(error, event) {
+            Lottery.setBalances()
+        })
         Lottery.contractInstance.ticketPurchased({}, {
             toBlock: 'latest'
         }).watch(function(error, event) {
-            console.log(event)
-        })
-        Lottery.contractInstance.logNumberReceived({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
+            Lottery.setBalances()
         })
         Lottery.contractInstance.logQuery({}, {
             toBlock: 'latest'
         }).watch(function(error, event) {
-            console.log(event)
+            Lottery.setBalances()
         })
         Lottery.contractInstance.winner({}, {
             toBlock: 'latest'
         }).watch(function(error, event) {
-            console.log(event)
+            Lottery.setBalances()
+        })
+        Lottery.contractInstance.deposit({}, {
+            toBlock: 'latest'
+        }).watch(function(error, event) {
+            Lottery.setBalances()
         })
     },
 
