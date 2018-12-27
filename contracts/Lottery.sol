@@ -67,6 +67,11 @@ contract Lottery is usingOraclize {
         uint amount
     );
 
+    event withdraw (
+        address receiver,
+        uint amount
+    );
+
     /**
     *   @dev Constructor
     */
@@ -261,8 +266,9 @@ contract Lottery is usingOraclize {
      * @dev Withdraw function. Only owner can withdraw contract funds.
     */
     
-    function withdraw() public onlyOwner {
+    function withdrawBalance() public onlyOwner {
         msg.sender.transfer(address(this).balance);
+        emit withdraw(msg.sender, address(this).balance);
     }
     
     /**

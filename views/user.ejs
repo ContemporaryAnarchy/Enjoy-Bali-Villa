@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Enjoy Bali</title>
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    <link rel="stylesheet" type="text/css" href="/css/user.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script src="js/user.js"></script>
+    <script src="js/lotteryABI.js"></script>
+    <script src="js/requests.js"></script>
+    <script src="js/ethereumjs-tx.js"></script>
+    <script src="js/web3.min.js"></script>
+    <script src="js/truffle-contract.min.js"></script>
+
+
+</head>
+
+<body class="master">
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top nav-bg" style="background-color: #e3f2fd;">
+        <a class="navbar-brand ml-5" href="#">Enjoy Bali Villa Lottery</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-ul justify-content-end mr-5">
+                <li class="nav-item active">
+                    <a class="nav-link mr-3" href="/admin">Admin<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/user">User</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <h1 class="welcome_text mt-5 mb-3">Welcome to Enjoy Bali Villa Lottery!</h1>
+    <div class="d-flex mx-auto welcome_div justify-content-center mb-4">
+        <div class="loader mr-3" id="loader"></div>
+        <h2 class="welcome_text">Logged in as: <span id="account">0x...</span></h2>
+    </div>
+    <div class="countdown_wrapper">
+        <div class="countdown mb-5">
+            <h2 class="countdown_text">Lottery Countdown</h2>
+        </div>
+        <div class="countdown_timer d-flex justify-content-between">
+            <div class="countdown_weeks d-flex justify-content-between">
+                <div>Weeks:</div>
+                <div id=weeks_timer>-</div>
+            </div>
+            <div class="countdown_days d-flex justify-content-between">
+                <div>Days:</div>
+                <div id="days_timer">-</div>
+            </div>
+            <div class="countdown_hours d-flex justify-content-between">
+                <div>Hours:</div>
+                <div id="hours_timer">-</div>
+            </div>
+            <div class="countdown_minutes d-flex justify-content-between">
+                <div>Minutes:</div>
+                <div id="minutes_timer">-</div>
+            </div>
+            <div class="countdown_seconds d-flex justify-content-between">
+                <div>Seconds:</div>
+                <div id="seconds_timer">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between" id="content"></div>
+        <div class="user_main d-flex justify-content-between mb-3">
+            <div class="buy_ticket_div buy_ticket_div_user">
+                <form id="buy_ticket_form">
+                    <div class="form-group">
+                        <h2 class="mb-5 welcome_text">Information</h2>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div>Ticket Price (ETH):</div>
+                            <div id="ticket_price">-</div>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div>Your Tickets:</div>
+                            <div id="your_tickets">-</div>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div>Your Odds:</div>
+                            <div id="odds">-</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="buy_ticket_div buy_ticket_div_user">
+                <form id="buy_form">
+                    <div class="form-group">
+                        <h2 class="mb-5 welcome_text">Buy Tickets</h2>
+                        <label for="ticket_amount">Amount</label>
+                        <input type="text" id="ticket_amount" class="form-control form-control-sm">
+                        <button class="buy_tickets btn btn-block mt-4" type="submit" id='buy_ticket'>Buy Tickets</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- <form id="free_ticket_form">
+        <input type="text" placeholder="address" id="address">
+        <input type="submit" value="Get Free Ticket" id="free_ticket">
+    </form> -->
+
+
+
+</body>
+<script>
+    $(document).ready(function () {
+        $('#buy_form').submit(function (event) {
+            event.preventDefault()
+            let amount = $('#ticket_amount').val()
+            Lottery.buyTicket(amount);
+        })
+
+        // $('#free_ticket_form').submit(function (event) {
+        //     event.preventDefault()
+        //     let addy = $('#address').val()
+        //     giveFreeticket(addy);
+        // })
+
+    })
+</script>
+
+</html>

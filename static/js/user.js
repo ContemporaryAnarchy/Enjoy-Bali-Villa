@@ -10,8 +10,8 @@ let Lottery = {
     initializeEvent: null,
     contractInstance: null,
     account: null,
-    
-    init: async() => {
+
+    init: async () => {
         await Lottery.newWeb3()
         await Lottery.newContract()
         await Lottery.render()
@@ -33,17 +33,17 @@ let Lottery = {
             Lottery.web3Inst = window.web3
         }
     },
-    
+
     newContract: async () => {
         const lottery = await $.getJSON('build/contracts/Lottery.json')
         Lottery.contracts.lotteryContract = TruffleContract(lottery)
         Lottery.contracts.lotteryContract.setProvider(web3.currentProvider)
     },
 
-    render: async() => {
+    render: async () => {
         if (Lottery.loading) {
             return
-        }   
+        }
 
         Lottery.setLoading(true)
 
@@ -72,31 +72,23 @@ let Lottery = {
     },
 
     retrieveValues: async () => {
-        let softCap = await Lottery.softCap()
-        let hardCap = await Lottery.hardCap()
         let startTimeUnix = await Lottery.startTime()
 
         let ticketPrice = await Lottery.getTicketPrice()
         let isInitialized = await Lottery.isInitialized()
         let totalPlayersArray = await Lottery.playerCount()
-        let totalPlayers = totalPlayersArray.c[0]
         let totalTickets = await Lottery.totalTicketsPurchased()
         let yourTickets = await Lottery.ownerTicketCount()
-        let contractBalance = await Lottery.contractBalance()
 
         Lottery.countdown(startTimeUnix, isInitialized)
-        
+
         return {
-                isInitialized: isInitialized,
-                softCap: softCap,
-                hardCap: hardCap,
-                ticketPrice: ticketPrice,
-                totalTickets: totalTickets,
-                totalPlayers: totalPlayers,
-                yourTickets: yourTickets,
-                contractBalance: contractBalance
-            }  
-        
+            isInitialized: isInitialized,
+            ticketPrice: ticketPrice,
+            totalTickets: totalTickets,
+            yourTickets: yourTickets,
+        }
+
     },
 
     setBalances: async () => {
@@ -104,16 +96,11 @@ let Lottery = {
         let odds = (values.yourTickets / values.totalTickets) * 100
         let oddsPrecise = odds.toPrecision(4) 
 
-        $('#balance').html(values.contractBalance)
         if (values.isInitialized) {
             if (values.yourTickets > 0) {
                 $('#odds').html(oddsPrecise + " %")
             }
-            $('#soft_cap').html(values.softCap)
-            $('#hard_cap').html(values.hardCap)
             $('#ticket_price').html(web3.fromWei(values.ticketPrice, 'ether'))
-            $('#tickets_purchased').html(values.totalTickets)
-            $('#total_players').html(values.totalPlayers)
             $('#your_tickets').html(values.yourTickets)
             $('#lottery_active').html('True')
         }
@@ -154,149 +141,59 @@ let Lottery = {
 
     // test out async await pattern here
     listenForEvents: () => {
-        Lottery.contractInstance.lottoInitialized({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            Lottery.setBalances()
-        })
         Lottery.contractInstance.ticketPurchased({}, {
             toBlock: 'latest'
-        }).watch(function(error, event) {
+        }).watch(function (error, event) {
             Lottery.setBalances()
-        })
-        Lottery.contractInstance.logQuery({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            Lottery.setBalances()
-        })
-        Lottery.contractInstance.winner({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            Lottery.setBalances()
-        })
-        Lottery.contractInstance.deposit({}, {
-            toBlock: 'latest'
-        }).watch(async(error, event) => {
-            await Lottery.setBalances()
-            $('#deposit_loader').css('visibility', 'hidden')
-        })
-        Lottery.contractInstance.withdraw({}, {
-            toBlock: 'latest'
-        }).watch(async(error, event) => {
-            await Lottery.setBalances()
-            $('#withdraw_loader').css('visibility', 'hidden')
         })
     },
 
-    initLotto: async() => {
-        //.call inspects the return value of the function 
-        let soft = $('#soft').val()
-        let softWei = web3.toWei(soft, 'ether')
-
-        let hard = $('#hard').val()
-        let hardWei = web3.toWei(hard, 'ether')
-
-        let ticketPrice = $('#ticket-price').val()
-        let ticketPriceWei = web3.toWei(ticketPrice, 'ether')
-        
-        let weeks = $('#weeks').val()
-        let days = $('#days').val()
-        let hours = $('#hours').val()
-        let minutes = $('#minutes').val()
-
-        let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
-
-        const txHash = await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: Lottery.account})
-
-        const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
-            toBlock: 'latest'
-        }).watch()
-
-        console.log(lottoInitialized)
-    },
 
     //Use raw transaction 
-    freeTicket: function(address) {
+    freeTicket: function (address) {
         return
     },
 
-
-    buyTicket: async(amount) => {
+    buyTicket: async (amount) => {
         const ticketPrice = await Lottery.contractInstance.ticketPrice.call()
 
         let ticketPriceWei = ticketPrice.c[0] * 1e14
         let totalAmount = ticketPriceWei * amount
 
-        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({from: Lottery.account, value: totalAmount, gas: 180000})
-    }, 
-
-    drawWinner: async() => {
-        await Lottery.contractInstance.drawWinner({from: web3.eth.accounts[0]})
-    },
-
-    withdraw: async() => {
-        $('#withdraw_loader').css('visibility', 'visible')
-        try {
-            await Lottery.contractInstance.withdrawBalance({from: web3.eth.accounts[0]})
-        } catch {
-            $('#withdraw_loader').css('visibility', 'hidden')
-        }
-    },
-
-    deposit: async(amount) => {
-        $('#deposit_loader').css('visibility', 'visible')
-        try {
-            await Lottery.contractInstance.sendTransaction({from: web3.eth.accounts[0], value: amount})
-        } catch {
-            $('#deposit_loader').css('visibility', 'hidden')
-        }
+        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({ from: Lottery.account, value: totalAmount, gas: 180000 })
     },
 
     //helper functions
 
-    ownerTicketCount: async() => {
+    ownerTicketCount: async () => {
         const result = await Lottery.contractInstance.getTicketAmount.call(web3.eth.accounts[0])
         return result.c[0]
     },
 
-    getTicketPrice: async() => {
+    getTicketPrice: async () => {
         const result = await Lottery.contractInstance.ticketPrice()
         return result.c[0] * 1e14
     },
 
-    totalTicketsPurchased: async() => {
+    totalTicketsPurchased: async () => {
         const result = await Lottery.contractInstance.ticketsPurchased()
         return result.c[0]
     },
 
-    softCap: async() => {
-        const result = await Lottery.contractInstance.softCap()
-        return result.c[0] / 1e5
-    },
-    
-    hardCap: async() => {
-        const result = await Lottery.contractInstance.hardCap()
-        return result.c[0] / 1e5
-    },
-
-    startTime: async() => {
+    startTime: async () => {
         const result = await Lottery.contractInstance.startTime()
         return result
     },
 
-    isInitialized: async() => {
+    isInitialized: async () => {
         const result = await Lottery.contractInstance.isInitialized()
         return result
     },
 
-    playerCount: async() => {
+    playerCount: async () => {
         const result = await Lottery.contractInstance.playerCount()
         return result
     },
 
-    contractBalance: async() => {
-        const result = await Lottery.contractInstance.contractBalance()
-        return result.c[0] / 1e4
-    }
 }
 

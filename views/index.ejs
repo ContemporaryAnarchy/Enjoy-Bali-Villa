@@ -34,10 +34,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav nav-ul justify-content-end mr-5">
                 <li class="nav-item active">
-                    <a class="nav-link mr-3" href="#">Admin<span class="sr-only">(current)</span></a>
+                    <a class="nav-link mr-3" href="/admin">Admin<span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">User</a>
+                    <a class="nav-link" href="/user">User</a>
                 </li>
             </ul>
         </div>
@@ -148,6 +148,10 @@
                             <div>Your Tickets:</div>
                             <div id="your_tickets">-</div>
                         </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div>Your Odds:</div>
+                            <div id="odds">-</div>
+                        </div>
                         <label for="ticket_amount">Amount</label>
                         <input type="text" id="ticket_amount" class="form-control form-control-sm">
                         <button class="buy_tickets btn btn-block mt-4" type="submit" id='buy_ticket'>Buy Tickets</button>
@@ -202,8 +206,11 @@
                 <div>Contract Balance (ETH):</div>
                 <div class="balance" id="balance">-</div>
             </div>
-            <div class="withdraw_wrapper">
-                <button class="btn btn-block withdraw_button" id="withdraw">Withdraw</button>
+            <div class="withdraw_wrapper d-flex align-items-center">
+                <button class="btn btn-block withdraw_button mr-2" id="withdraw">Withdraw</button>
+                <div>
+                    <div class="withdraw_loader mr-3" id="withdraw_loader"></div>
+                </div>
             </div>
         </div>
 
@@ -212,8 +219,11 @@
                 <div class="form-group balance_wrapper align-items-center">
                     <input class="amount form-control form-control-sm" id="amount" placeholder="amount (ETH)">
                 </div>
-                <div class="deposit_wrapper">
-                    <button class="btn btn-block deposit_button" type="submit" id="deposit">Deposit</button>
+                <div class="deposit_wrapper d-flex align-items-center">
+                    <button class="btn btn-block deposit_button mr-2" type="submit" id="deposit">Deposit</button>
+                    <div>
+                        <div class="deposit_loader mr-3" id="deposit_loader"></div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -229,6 +239,8 @@
 </body>
 <script>
     $(document).ready(function(){
+
+
         $('#myCarousel').on('slid.bs.carousel', function () {
             console.log('works great')
         })
@@ -248,11 +260,7 @@
             let addy = $('#address').val()
             giveFreeticket(addy);
         })
-
-        $('#data').click(function(){
-            Lottery.getData()
-        })
-
+        
         $('#init').click(function (event) {
             event.preventDefault()
             Lottery.isInitialized();

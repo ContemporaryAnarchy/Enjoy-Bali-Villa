@@ -12,12 +12,16 @@ app.use(bodyParser.json())
 
 app.use(express.static(__dirname + '/static'))
 
-router.get('/', function(req, res) {
+router.get('/', (req, res) => {
     res.redirect('/admin')
 })
 
-router.get('/admin', function(req, res) {
+router.get('/admin', (req, res) => {
     res.render('index')
+})
+
+router.get('/user', (req, res) => {
+    res.render('user')
 })
 
 let port = process.env.port || 8080;
