@@ -62,6 +62,11 @@ contract Lottery is usingOraclize {
         address winner
     );
 
+    event deposit (
+        address sender,
+        uint amount
+    );
+
     /**
     *   @dev Constructor
     */
@@ -267,6 +272,8 @@ contract Lottery is usingOraclize {
     function() public payable {
         if (msg.sender != owner) {
             revert();
+        } else {
+            emit deposit(msg.sender, msg.value);
         }
     }
 

@@ -108,14 +108,17 @@
 .withdraw_text {
     text-align: center;
 }
-.bottom_wrapper {
-    width: 65%;
+.withdraw_container, .deposit_container {
+    width: 70%;
     margin: 0px auto;
 }
-.balance_wrapper, .withdraw_wrapper {
+.balance_wrapper, .withdraw_wrapper, .deposit_wrapper {
     width: 40%;
 }
 .withdraw_button {
     background-color: lightcoral;
+}
+.deposit_button {
+    background-color: #ADD8E6;
 }
 

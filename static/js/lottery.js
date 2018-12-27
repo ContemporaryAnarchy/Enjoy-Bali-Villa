@@ -204,11 +204,15 @@ let Lottery = {
     }, 
 
     drawWinner: async() => {
-        await Lottery.contractInstance.drawWinner({ from: web3.eth.accounts[0]})
+        await Lottery.contractInstance.drawWinner({from: web3.eth.accounts[0]})
     },
 
     withdraw: async() => {
-        await Lottery.contractInstance.withdraw({ from: web3.eth.accounts[0]})
+        await Lottery.contractInstance.withdraw({from: web3.eth.accounts[0]})
+    },
+
+    deposit: async(amount) => {
+        await Lottery.contractInstance.sendTransaction({from: web3.eth.accounts[0], value: amount})
     },
 
     //helper functions

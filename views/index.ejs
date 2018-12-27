@@ -166,15 +166,15 @@
                     <div>3 Bedrooms With A View</div>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
-                    <div>Soft Cap:</div>
+                    <div>Soft Cap (ETH):</div>
                     <div id="soft_cap">-</div>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
-                    <div>Hard Cap:</div>
+                    <div>Hard Cap (ETH):</div>
                     <div id="hard_cap">-</div>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
-                    <div>Ticket Price:</div>
+                    <div>Ticket Price (ETH):</div>
                     <div id="ticket_price">-</div>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
@@ -194,17 +194,30 @@
     </div>
     <div class="withdraw_div">
         <div class="withdraw mb-4">
-            <h2 class="withdraw_text">Withdraw Contract Funds</h2>
+            <h2 class="withdraw_text">Contract Operations</h2>
         </div>
-        <div class="d-flex justify-content-between bottom_wrapper">
+
+        <div class="d-flex justify-content-between withdraw_container mb-3">
             <div class="d-flex justify-content-between balance_wrapper align-items-center">
-                <div>Contract Balance:</div>
+                <div>Contract Balance (ETH):</div>
                 <div class="balance" id="balance">-</div>
             </div>
             <div class="withdraw_wrapper">
                 <button class="btn btn-block withdraw_button" id="withdraw">Withdraw</button>
             </div>
         </div>
+
+        <div class="d-flex justify-content-between deposit_container">
+            <form class="form d-flex justify-content-between" id="deposit_form" style="width: 100%;">
+                <div class="form-group balance_wrapper align-items-center">
+                    <input class="amount form-control form-control-sm" id="amount" placeholder="amount (ETH)">
+                </div>
+                <div class="deposit_wrapper">
+                    <button class="btn btn-block deposit_button" type="submit" id="deposit">Deposit</button>
+                </div>
+            </form>
+        </div>
+        
     </div>
     <!-- <form id="free_ticket_form">
         <input type="text" placeholder="address" id="address">
@@ -254,7 +267,13 @@
             event.preventDefault()
             Lottery.withdraw();
         })
-
+        
+        $('#deposit_form').submit(function(event) {
+            event.preventDefault()
+            let amount = $('#amount').val()
+            let amountWei = web3.toWei(amount, 'ether')
+            Lottery.deposit(amountWei);
+        })
 
     })
 </script>
