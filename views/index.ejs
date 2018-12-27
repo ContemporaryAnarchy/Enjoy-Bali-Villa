@@ -43,11 +43,37 @@
         </div>
     </nav>      
     <h1 class="welcome_text mt-5 mb-3">Admin Dashboard</h1>
-    <div class="d-flex mx-auto welcome_div justify-content-center">
+    <div class="d-flex mx-auto welcome_div justify-content-center mb-4">
         <div class="loader mr-3" id="loader"></div>
         <h2 class="welcome_text">Logged in as: <span id="account">0x...</span></h2>
     </div>
-
+    <div class="countdown_wrapper">
+        <div class="countdown mb-5">
+            <h2 class="countdown_text">Lottery Countdown</h2>
+        </div>
+        <div class="countdown_timer d-flex justify-content-between">
+            <div class="countdown_weeks d-flex justify-content-between">
+                <div>Weeks:</div>
+                <div id=weeks_timer>-</div>
+            </div>
+            <div class="countdown_days d-flex justify-content-between">
+                <div>Days:</div>
+                <div id="days_timer">-</div>
+            </div>
+            <div class="countdown_hours d-flex justify-content-between"> 
+                <div>Hours:</div>
+                <div id="hours_timer">-</div>
+            </div>
+            <div class="countdown_minutes d-flex justify-content-between">
+                <div>Minutes:</div>
+                <div id="minutes_timer">-</div>
+            </div>
+            <div class="countdown_seconds d-flex justify-content-between">
+                <div>Seconds:</div>
+                <div id="seconds_timer">-</div>
+            </div>
+        </div>
+    </div>
     <div class="d-flex justify-content-between full_width" id="content">
         <div class="form_div">
             <h2 class="welcome_text">Create New Lottery</h2>
@@ -159,19 +185,27 @@
                     <div>Total Players:</div>
                     <div id="total_players">-</div>
                 </div>
-                
-                <div class="mb-3 d-flex justify-content-between">
-                    <div>Start Time:</div>
-                    <div id="start_time">-</div>
-                </div>
                 <button class="draw_winner btn btn-block mt-5" id="draw_winner">Draw Winner</button>
             
             </div>
 
         </div>
-
+        
     </div>
-
+    <div class="withdraw_div">
+        <div class="withdraw mb-4">
+            <h2 class="withdraw_text">Withdraw Contract Funds</h2>
+        </div>
+        <div class="d-flex justify-content-between bottom_wrapper">
+            <div class="d-flex justify-content-between balance_wrapper align-items-center">
+                <div>Contract Balance:</div>
+                <div class="balance" id="balance">-</div>
+            </div>
+            <div class="withdraw_wrapper">
+                <button class="btn btn-block withdraw_button" id="withdraw">Withdraw</button>
+            </div>
+        </div>
+    </div>
     <!-- <form id="free_ticket_form">
         <input type="text" placeholder="address" id="address">
         <input type="submit" value="Get Free Ticket" id="free_ticket">
@@ -215,6 +249,13 @@
             event.preventDefault()
             Lottery.drawWinner();
         })
+
+        $('#withdraw').click(function(event) {
+            event.preventDefault()
+            Lottery.withdraw();
+        })
+
+
     })
 </script>
 </html>

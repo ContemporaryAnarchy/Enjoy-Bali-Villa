@@ -72,10 +72,8 @@ let Lottery = {
 
     retrieveValues: async () => {
         let softCap = await Lottery.softCap()
-        console.log(softCap)
         let hardCap = await Lottery.hardCap()
         let startTimeUnix = await Lottery.startTime()
-        Lottery.countdown(startTimeUnix)
 
         let ticketPrice = await Lottery.getTicketPrice()
         let isInitialized = await Lottery.isInitialized()
@@ -83,26 +81,28 @@ let Lottery = {
         let totalPlayers = totalPlayersArray.c[0]
         let totalTickets = await Lottery.totalTicketsPurchased()
         let yourTickets = await Lottery.ownerTicketCount()
+        let contractBalance = await Lottery.contractBalance()
 
+        Lottery.countdown(startTimeUnix, isInitialized)
         
-        $('#soft_cap').html(softCap)
-        $('#hard_cap').html(hardCap)
-        $('#ticket_price').html(web3.fromWei(ticketPrice, 'ether'))
-        $('#tickets_purchased').html(totalTickets)
-        $('#total_players').html(totalPlayers)
-        $('#your_tickets').html(yourTickets)
+        $('#balance').html(contractBalance)
         if (isInitialized) {
+            $('#soft_cap').html(softCap)
+            $('#hard_cap').html(hardCap)
+            $('#ticket_price').html(web3.fromWei(ticketPrice, 'ether'))
+            $('#tickets_purchased').html(totalTickets)
+            $('#total_players').html(totalPlayers)
+            $('#your_tickets').html(yourTickets)
             $('#lottery_active').html('True')
-        } 
+        }
         
     },
 
-    countdown: (unix) => {
+    countdown: (unix, initialized) => {
         let countDown = setInterval(() => {
             let now = new Date().getTime()
             let end = (parseInt(unix) * 1000)
             let distance = end - now
-            console.log(distance)
             let totalSeconds = distance / 1000
 
             let weeks = Math.floor(totalSeconds / 604800)
@@ -110,14 +110,22 @@ let Lottery = {
             let hours = Math.floor((totalSeconds % (days * 86400 + weeks * 604800)) / 3600)
             let minutes = Math.floor((totalSeconds % (hours * 3600 + days * 86400 + weeks * 604800)) / 60)
             let seconds = Math.floor(totalSeconds % (minutes * 60 + hours * 3600 + days * 86400 + weeks * 604800))
-
-            let startTime = `${weeks} weeks, ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`
-            $('#start_time').html(startTime)
-
-            if (distance < 0) {
-                clearInterval(countDown)
-                $('#start_time').html(0)
+            if (initialized) {
+                $('#weeks_timer').html(weeks)
+                $('#days_timer').html(days)
+                $('#hours_timer').html(hours)
+                $('#minutes_timer').html(minutes)
+                $('#seconds_timer').html(seconds)
+                if (distance < 0) {
+                    clearInterval(countDown)
+                    $('#weeks_timer').html(0)
+                    $('#days_timer').html(0)
+                    $('#hours').html(0)
+                    $('#minutes').html(0)
+                    $('#seconds').html(0)
+                }
             }
+
 
         }, 1000)
     },
@@ -189,14 +197,10 @@ let Lottery = {
     buyTicket: async(amount) => {
         const ticketPrice = await Lottery.contractInstance.ticketPrice.call()
 
-        console.log(ticketPrice)
-
         let ticketPriceWei = ticketPrice.c[0] * 1e14
         let totalAmount = ticketPriceWei * amount
 
         const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({from: Lottery.account, value: totalAmount, gas: 180000})
-
-        console.log(txHash)
     }, 
 
     drawWinner: async() => {
@@ -215,38 +219,43 @@ let Lottery = {
     },
 
     getTicketPrice: async() => {
-        const result = await Lottery.contractInstance.ticketPrice.call()
+        const result = await Lottery.contractInstance.ticketPrice()
         return result.c[0] * 1e14
     },
 
     totalTicketsPurchased: async() => {
-        const result = await Lottery.contractInstance.ticketsPurchased.call()
+        const result = await Lottery.contractInstance.ticketsPurchased()
         return result.c[0]
     },
 
     softCap: async() => {
-        const result = await Lottery.contractInstance.softCap.call()
+        const result = await Lottery.contractInstance.softCap()
         return result.c[0] / 1e5
     },
     
     hardCap: async() => {
-        const result = await Lottery.contractInstance.hardCap.call()
+        const result = await Lottery.contractInstance.hardCap()
         return result.c[0] / 1e5
     },
 
     startTime: async() => {
-        const result = await Lottery.contractInstance.startTime.call()
+        const result = await Lottery.contractInstance.startTime()
         return result
     },
 
     isInitialized: async() => {
-        const result = await Lottery.contractInstance.isInitialized.call()
+        const result = await Lottery.contractInstance.isInitialized()
         return result
     },
 
     playerCount: async() => {
-        const result = await Lottery.contractInstance.playerCount.call()
+        const result = await Lottery.contractInstance.playerCount()
         return result
+    },
+
+    contractBalance: async() => {
+        const result = await Lottery.contractInstance.contractBalance()
+        return result.c[0] / 1e4
     }
 }
 

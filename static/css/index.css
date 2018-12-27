@@ -25,6 +25,23 @@
 .welcome_text {
     text-align: center;
 }
+.countdown_wrapper {
+    width: 55%;
+    margin: 0px auto;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 25px 25px 25px 25px;
+    background-color: #EAFDFF;
+}
+.countdown {
+    width: 40%;
+    margin: 0px auto;
+    text-align: center;
+    
+}
+.countdown_weeks, .countdown_days, .countdown_hours, .countdown_minutes, .countdown_seconds {
+    width: 13%;
+}
 .villa_text {
     text-align: center;
 }
@@ -43,7 +60,7 @@
 .full_width {
     width: 55%;
     margin: 0px auto;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 .form_div {
     width: 47%;
@@ -51,6 +68,7 @@
     border-radius: 5px;
     padding: 25px 25px 25px 25px;
     background-color: #EAFDFF;
+    border: 1px solid black;
 }
 .right_side {
     width: 47%;
@@ -60,6 +78,7 @@
     border-radius: 5px;
     padding: 25px 25px 25px 25px;
     background-color: #EAFDFF;
+    border: 1px solid black;
 }
 .nav-bg {
     background-color: #ADD8E6 !important;
@@ -72,3 +91,31 @@
 .draw_winner {
     background-color: lightcoral;
 }
+
+.withdraw_div {
+    width: 55%;
+    margin: 0px auto;
+    border-radius: 5px;
+    padding: 25px 25px 25px 25px;
+    background-color: #EAFDFF;
+    margin-bottom: 40px;
+    border: 1px solid black;
+}
+.withdraw {
+    width: 50%;
+    margin: 0px auto;
+}
+.withdraw_text {
+    text-align: center;
+}
+.bottom_wrapper {
+    width: 65%;
+    margin: 0px auto;
+}
+.balance_wrapper, .withdraw_wrapper {
+    width: 40%;
+}
+.withdraw_button {
+    background-color: lightcoral;
+}
+

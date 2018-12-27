@@ -84,6 +84,10 @@ contract Lottery is usingOraclize {
     function getValues() public view returns (uint, uint, uint) {
         return (softCap, hardCap, startTime);
     }
+
+    function contractBalance() public view returns(uint) {
+        return address(this).balance;
+    }
     
     /**
     *   @dev Initialize the lottery with the appropriate values. Only available to contract owner.
