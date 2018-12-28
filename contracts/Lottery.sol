@@ -72,6 +72,10 @@ contract Lottery is usingOraclize {
         uint amount
     );
 
+    event balancesReset (
+
+    );
+
     /**
     *   @dev Constructor
     */
@@ -130,6 +134,7 @@ contract Lottery is usingOraclize {
         
         buyerPosition.length = 0;
         
+        emit balancesReset();
         
     }
 

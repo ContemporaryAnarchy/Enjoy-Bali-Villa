@@ -74,6 +74,20 @@
             </div>
         </div>
     </div>
+    <div class="countdown_wrapper mt-4">
+        <div class="winner_text mr-2">Winner:</div>
+        <div class="mt-3 winner_address" id="winner_address">-</div>
+        <div class="winner_wrapper mt-3 d-flex justify-content-center align-items-center">
+            <div style="display: inline-block; visibility: hidden;" class="mr-2">
+                <div class="winner_loader"></div>
+            </div>
+            <button class="winner_button btn" id="draw_winner">Draw Winner</button>
+            <div style="display: inline-block" class="ml-2">
+                <div class="winner_loader" id="winner_loader"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-between full_width" id="content">
         <div class="form_div">
             <h2 class="welcome_text">Create New Lottery</h2>
@@ -134,33 +148,22 @@
                         <input type="text" class="form-control form-control-sm" name="minutes" id="minutes" placeholder="minutes">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-block initialize mt-5">Initialize</button>
+                <div class="mt-4 d-flex justify-content-center align-items-center">
+                    <div style="display: inline-block; visibility: hidden;" class="mr-2">
+                        <div class="init_loader"></div>
+                    </div>
+                    <button type="submit" class="btn initialize_button">Initialize</button>
+                    <div style="display: inline-block" class="ml-2">
+                        <div class="init_loader" id="init_loader"></div>
+                    </div>
+                </div>
+                
             </form>
         </div>
     
         <div class="right_side d-flex flex-column justify-content-between">
-            <div class="buy_ticket_div">
-            
-                <form id="buy_ticket_form">
-                    <div class="form-group">
-                        <h2 class="mb-5 welcome_text">Buy Tickets</h2>
-                        <div class="mb-3 d-flex justify-content-between">
-                            <div>Your Tickets:</div>
-                            <div id="your_tickets">-</div>
-                        </div>
-                        <div class="mb-3 d-flex justify-content-between">
-                            <div>Your Odds:</div>
-                            <div id="odds">-</div>
-                        </div>
-                        <label for="ticket_amount">Amount</label>
-                        <input type="text" id="ticket_amount" class="form-control form-control-sm">
-                        <button class="buy_tickets btn btn-block mt-4" type="submit" id='buy_ticket'>Buy Tickets</button>
-                    </div>
-                </form>
-            </div>
-
             <div class="lottery-info">
-                <h2 class="welcome_text mb-4">Lottery Information</h2>
+                <h2 class="welcome_text mb-4">Information</h2>
                 <div class="mb-3 d-flex justify-content-between">
                     <div>Lottery Active:</div>
                     <div id="lottery_active">False</div>
@@ -189,43 +192,46 @@
                     <div>Total Players:</div>
                     <div id="total_players">-</div>
                 </div>
-                <button class="draw_winner btn btn-block mt-5" id="draw_winner">Draw Winner</button>
+                
             
             </div>
-
-        </div>
-        
-    </div>
-    <div class="withdraw_div">
-        <div class="withdraw mb-4">
-            <h2 class="withdraw_text">Contract Operations</h2>
-        </div>
-
-        <div class="d-flex justify-content-between withdraw_container mb-3">
-            <div class="d-flex justify-content-between balance_wrapper align-items-center">
-                <div>Contract Balance (ETH):</div>
-                <div class="balance" id="balance">-</div>
-            </div>
-            <div class="withdraw_wrapper d-flex align-items-center">
-                <button class="btn btn-block withdraw_button mr-2" id="withdraw">Withdraw</button>
-                <div>
-                    <div class="withdraw_loader mr-3" id="withdraw_loader"></div>
+            <div class="buy_ticket_div">
+                <h2 class="mb-4 welcome_text">Withdraw Funds</h2>
+                <div class="d-flex justify-content-between balance_wrapper align-items-center">
+                    <div>Contract Balance (ETH):</div>
+                    <div class="balance" id="balance">-</div>
                 </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between deposit_container">
-            <form class="form d-flex justify-content-between" id="deposit_form" style="width: 100%;">
-                <div class="form-group balance_wrapper align-items-center">
-                    <input class="amount form-control form-control-sm" id="amount" placeholder="amount (ETH)">
-                </div>
-                <div class="deposit_wrapper d-flex align-items-center">
-                    <button class="btn btn-block deposit_button mr-2" type="submit" id="deposit">Deposit</button>
-                    <div>
-                        <div class="deposit_loader mr-3" id="deposit_loader"></div>
+                <div class="mt-3 d-flex justify-content-center align-items-center">
+                    <div style="display: inline-block; visibility: hidden;" class="mr-2">
+                        <div class="withdraw_loader"></div>
+                    </div>
+                    <button class="btn withdraw_button" id="withdraw">Withdraw</button>
+                    <div style="display: inline-block" class="ml-2">
+                        <div class="withdraw_loader" id="withdraw_loader"></div>
                     </div>
                 </div>
+            </div>
+            <div class="buy_ticket_div">
+            <h2 class="mb-4 welcome_text">Deposit Funds</h2>
+            <form class="form" id="deposit_form" style="width: 100%;">
+                <div class="form-group amount_input">
+                    <input class="form-control form-control-sm" id="amount" placeholder="amount (ETH)">
+                </div>
+                <div class="mt-3 d-flex justify-content-center align-items-center">
+                    <div style="display: inline-block; visibility: hidden;" class="mr-2">
+                        <div class="deposit_loader"></div>
+                    </div>
+                    <button class="btn deposit_button" type="submit" id="deposit">Deposit</button>
+                    <div style="display: inline-block" class="ml-2">
+                        <div class="deposit_loader" id="deposit_loader"></div>
+                    </div>
+                </div>
+            
             </form>
+            </div>
+
+            
+
         </div>
         
     </div>

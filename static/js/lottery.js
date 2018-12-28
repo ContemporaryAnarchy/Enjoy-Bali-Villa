@@ -154,32 +154,56 @@ let Lottery = {
 
     // test out async await pattern here
     listenForEvents: () => {
-        Lottery.contractInstance.lottoInitialized({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            Lottery.setBalances()
-        })
         Lottery.contractInstance.ticketPurchased({}, {
             toBlock: 'latest'
         }).watch(function(error, event) {
             Lottery.setBalances()
         })
+
         Lottery.contractInstance.logQuery({}, {
             toBlock: 'latest'
         }).watch(function(error, event) {
-            Lottery.setBalances()
+            console.log(event)
         })
-        Lottery.contractInstance.winner({}, {
+
+        Lottery.contractInstance.logNumberReceived({}, {
             toBlock: 'latest'
         }).watch(function(error, event) {
+            console.log(event)
+        })
+
+        Lottery.contractInstance.balancesReset({}, {
+            toBlock: 'latest'
+        }).watch((error, event) => {
+            console.log(event)
             Lottery.setBalances()
         })
+
+        Lottery.contractInstance.lottoInitialized({}, {
+            toBlock: 'latest'
+        }).watch(async(error, event) => {
+            await Lottery.setBalances()
+            $('#init_loader').css('visibility', 'hidden')
+            $('#winner_address').html('-')
+        })
+
+        Lottery.contractInstance.winner({}, {
+            toBlock: 'latest'
+        }).watch((error, event) => {
+            console.log(event)
+            $('#winner_address').html(event.args.winner)
+            $('#winner_loader').css('visibility', 'hidden')
+
+        })
+        
+
         Lottery.contractInstance.deposit({}, {
             toBlock: 'latest'
         }).watch(async(error, event) => {
             await Lottery.setBalances()
             $('#deposit_loader').css('visibility', 'hidden')
         })
+
         Lottery.contractInstance.withdraw({}, {
             toBlock: 'latest'
         }).watch(async(error, event) => {
@@ -205,8 +229,12 @@ let Lottery = {
         let minutes = $('#minutes').val()
 
         let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
-
-        const txHash = await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: Lottery.account})
+        $('#init_loader').css('visibility', 'visible')
+        try {
+            await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: Lottery.account})
+        } catch {
+            $('#init_loader').css('visibility', 'hidden')
+        }
 
         const lottoInitialized = await Lottery.contractInstance.lottoInitialized({}, {
             toBlock: 'latest'
@@ -231,7 +259,12 @@ let Lottery = {
     }, 
 
     drawWinner: async() => {
-        await Lottery.contractInstance.drawWinner({from: web3.eth.accounts[0]})
+        $('#winner_loader').css('visibility', 'visible')
+        try {
+            await Lottery.contractInstance.drawWinner({from: web3.eth.accounts[0]})
+        } catch {
+            $('#winner_loader').css('visibility', 'hidden')
+        }
     },
 
     withdraw: async() => {
