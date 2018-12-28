@@ -22,6 +22,7 @@
     <script src="js/ethereumjs-tx.js"></script>
     <script src="js/web3.min.js"></script>
     <script src="js/truffle-contract.min.js"></script>
+    <script type="text/javascript" src="https://files.coinmarketcap.com/static/widget/currency.js"></script>
 
 
 </head>
@@ -77,39 +78,60 @@
             </div>
         </div>
     </div>
-    <div class="d-flex justify-content-between" id="content"></div>
-        <div class="user_main d-flex justify-content-between mb-3">
-            <div class="buy_ticket_div buy_ticket_div_user">
-                <form id="buy_ticket_form">
-                    <div class="form-group">
-                        <h2 class="mb-5 welcome_text">Information</h2>
-                        <div class="mb-3 d-flex justify-content-between">
-                            <div>Ticket Price (ETH):</div>
-                            <div id="ticket_price">-</div>
-                        </div>
-                        <div class="mb-3 d-flex justify-content-between">
-                            <div>Your Tickets:</div>
-                            <div id="your_tickets">-</div>
-                        </div>
-                        <div class="mb-3 d-flex justify-content-between">
-                            <div>Your Odds:</div>
-                            <div id="odds">-</div>
-                        </div>
-                    </div>
-                </form>
+    <div class="user_main d-flex justify-content-between">
+        <div class="buy_ticket_div buy_ticket_div_user">
+            <h2 class="mb-5 welcome_text">Villa</h2>
+            <div class="villa">
+                <img src="/images/balivilla.jpg" alt="balivilla1" class="villa_image">
             </div>
-            <div class="buy_ticket_div buy_ticket_div_user">
-                <form id="buy_form">
-                    <div class="form-group">
-                        <h2 class="mb-5 welcome_text">Buy Tickets</h2>
-                        <label for="ticket_amount">Amount</label>
-                        <input type="text" id="ticket_amount" class="form-control form-control-sm">
-                        <button class="buy_tickets btn btn-block mt-4" type="submit" id='buy_ticket'>Buy Tickets</button>
-                    </div>
-                </form>
-            </div>
+            <div class="mx-auto villa_text">3 Bedrooms With A View</div>
         </div>
-
+        <div class="buy_ticket_div buy_ticket_div_user">
+            <h2 class="mb-5 welcome_text">Exchange</h2>
+            <div class="coinmarketcap-currency-widget" data-currencyid="1027" data-base="USD" data-secondary="" data-ticker="true"
+                data-rank="true" data-marketcap="true" data-volume="true" data-stats="USD" data-statsticker="false"></div>
+        </div>
+    </div>
+    <div class="user_main d-flex justify-content-between mb-5">
+        <div class="buy_ticket_div buy_ticket_div_user">
+            <form id="buy_ticket_form">
+                <div class="form-group">
+                    <h2 class="mb-5 welcome_text">Information</h2>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <div>Ticket Price (ETH):</div>
+                        <div id="ticket_price">-</div>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <div>Your Tickets:</div>
+                        <div id="your_tickets">-</div>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <div>Your Odds:</div>
+                        <div id="odds">-</div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="buy_ticket_div buy_ticket_div_user">
+            <form id="buy_form">
+                <div class="form-group">
+                    <h2 class="mb-5 welcome_text">Buy Tickets</h2>
+                    <div class="buy_input">
+                        <input type="text" id="ticket_amount" class="form-control form-control-sm" placeholder="amount">
+                    </div>
+                    <div class="mt-3 d-flex justify-content-center align-items-center">
+                        <div style="display: inline-block; visibility: hidden;" class="mr-2">
+                            <div class="winner_loader"></div>
+                        </div>
+                        <button class="buy_tickets btn" type="submit" id='buy_ticket'>Buy Tickets</button>
+                        <div style="display: inline-block" class="ml-2">
+                            <div class="buy_tickets_loader" id="buy_tickets_loader"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- <form id="free_ticket_form">

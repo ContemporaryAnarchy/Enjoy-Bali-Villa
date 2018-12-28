@@ -145,6 +145,7 @@ let Lottery = {
             toBlock: 'latest'
         }).watch(function (error, event) {
             Lottery.setBalances()
+            $('#buy_tickets_loader').css('visibility', 'hidden')
         })
     },
 
@@ -160,7 +161,12 @@ let Lottery = {
         let ticketPriceWei = ticketPrice.c[0] * 1e14
         let totalAmount = ticketPriceWei * amount
 
-        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({ from: Lottery.account, value: totalAmount, gas: 180000 })
+        $('#buy_tickets_loader').css('visibility', 'visible')
+        try {
+            await Lottery.contractInstance.buyTicket.sendTransaction({ from: Lottery.account, value: totalAmount, gas: 180000 })
+        } catch {
+            $('#buy_tickets_loader').css('visibility', 'hidden')
+        }
     },
 
     //helper functions

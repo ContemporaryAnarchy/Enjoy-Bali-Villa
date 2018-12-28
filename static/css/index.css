@@ -80,6 +80,10 @@
     background-color: #EAFDFF;
     border: 1px solid black;
 }
+.buy_input {
+    width: 75%;
+    margin: 0px auto;
+}
 .nav-bg {
     background-color: #ADD8E6 !important;
 
@@ -123,9 +127,6 @@
     width: 75%;
     margin: 0px auto;
 }
-.buy_tickets {
-    background-color: #ADD8E6;
-}
 .withdraw_button {
     background-color: lightcoral;
     width: 75%;
@@ -138,12 +139,12 @@
     width: 75%;
     margin: 0px auto;
 }
-.deposit_button, .initialize_button {
+.deposit_button, .initialize_button, .buy_tickets {
     background-color: #ADD8E6;
     width: 75%;
 }
 
-.withdraw_loader, .deposit_loader, .winner_loader, .init_loader {
+.withdraw_loader, .deposit_loader, .winner_loader, .init_loader, .buy_tickets_loader {
 border: 4px solid #f3f3f3; /* Light grey */
 border-top: 4px solid #3498db; /* Blue */
 border-radius: 50%;
