@@ -116,6 +116,14 @@ let Lottery = {
             $('#total_players').html(values.totalPlayers)
             $('#your_tickets').html(values.yourTickets)
             $('#lottery_active').html('True')
+        } else {
+            $('#soft_cap').html('-')
+            $('#hard_cap').html('-')
+            $('#ticket_price').html('-')
+            $('#tickets_purchased').html('-')
+            $('#total_players').html('-')
+            $('#your_tickets').html('-')
+            $('#lottery_active').html('False')
         }
     },
 
@@ -145,6 +153,12 @@ let Lottery = {
                     $('#minutes').html(0)
                     $('#seconds').html(0)
                 }
+            } else {
+                $('#weeks_timer').html('-')
+                $('#days_timer').html('-')
+                $('#hours').html('-')
+                $('#minutes').html('-')
+                $('#seconds').html('-')
             }
 
 
