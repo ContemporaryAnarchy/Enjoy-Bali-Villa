@@ -108,33 +108,49 @@ let Lottery = {
 
     countdown: (unix, initialized) => {
         let countDown = setInterval(() => {
-            let now = new Date().getTime()
-            let end = (parseInt(unix) * 1000)
-            let distance = end - now
-            let totalSeconds = distance / 1000
+            if (!initialized) {
+                $('#weeks_timer').html('-')
+                $('#days_timer').html('-')
+                $('#hours_timer').html('-')
+                $('#minutes_timer').html('-')
+                $('#seconds_timer').html('-')
+                clearInterval(countDown)
+            } else {
+                let now = new Date().getTime()
+                let end = (parseInt(unix) * 1000)
+                let distance = end - now
+                let newDate = new Date(distance)
 
-            let weeks = Math.floor(totalSeconds / 604800)
-            let days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
-            let hours = Math.floor((totalSeconds % (days * 86400 + weeks * 604800)) / 3600)
-            let minutes = Math.floor((totalSeconds % (hours * 3600 + days * 86400 + weeks * 604800)) / 60)
-            let seconds = Math.floor(totalSeconds % (minutes * 60 + hours * 3600 + days * 86400 + weeks * 604800))
-            if (initialized) {
+                let hours = newDate.getHours()
+                let minutes = newDate.getMinutes()
+                let seconds = newDate.getSeconds()
+
+                let totalSeconds = Math.floor(distance / 1000)
+                let weeks = Math.floor(totalSeconds / 604800)
+
+                let days = 0
+
+                if (weeks === 0) {
+                    days = Math.floor(totalSeconds / 86400)
+                } else {
+                    days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
+                }
+
                 $('#weeks_timer').html(weeks)
                 $('#days_timer').html(days)
                 $('#hours_timer').html(hours)
                 $('#minutes_timer').html(minutes)
                 $('#seconds_timer').html(seconds)
+
                 if (distance < 0) {
-                    clearInterval(countDown)
                     $('#weeks_timer').html(0)
                     $('#days_timer').html(0)
                     $('#hours').html(0)
                     $('#minutes').html(0)
                     $('#seconds').html(0)
+                    clearInterval(countDown)
                 }
             }
-
-
         }, 1000)
     },
 
