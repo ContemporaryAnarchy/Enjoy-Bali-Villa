@@ -47,11 +47,9 @@ let Lottery = {
 
         Lottery.setLoading(true)
 
-        //set current account
         Lottery.account = web3.eth.accounts[0]
         $('#account').html(Lottery.account)
 
-        //load the smart contract
         const contract = await Lottery.contracts.lotteryContract.deployed()
         Lottery.contractInstance = contract
 
@@ -100,6 +98,54 @@ let Lottery = {
         
     },
 
+    countdown: (unix, initialized) => {
+        let countDown = setInterval(() => {
+            if (!initialized) {
+                $('#weeks_timer').html('-')
+                $('#days_timer').html('-')
+                $('#hours_timer').html('-')
+                $('#minutes_timer').html('-')
+                $('#seconds_timer').html('-')
+                clearInterval(countDown)
+            } else {
+                let now = new Date().getTime()
+                let end = (parseInt(unix) * 1000)
+                let distance = end - now
+                let newDate = new Date(distance)
+
+                let hours = newDate.getHours()
+                let minutes = newDate.getMinutes()
+                let seconds = newDate.getSeconds()
+
+                let totalSeconds = Math.floor(distance / 1000)
+                let weeks = Math.floor(totalSeconds / 604800)
+
+                let days = 0
+
+                if (weeks === 0) {
+                    days = Math.floor(totalSeconds / 86400)
+                } else {
+                    days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
+                }
+
+                $('#weeks_timer').html(weeks)
+                $('#days_timer').html(days)
+                $('#hours_timer').html(hours)
+                $('#minutes_timer').html(minutes)
+                $('#seconds_timer').html(seconds)
+
+                if (distance < 0) {
+                    $('#weeks_timer').html(0)
+                    $('#days_timer').html(0)
+                    $('#hours').html(0)
+                    $('#minutes').html(0)
+                    $('#seconds').html(0)
+                    clearInterval(countDown)
+                }
+            }
+        }, 1000)
+    },
+
     setBalances: async () => {
         const values = await Lottery.retrieveValues()
         let odds = (values.yourTickets / values.totalTickets) * 100
@@ -128,53 +174,7 @@ let Lottery = {
         }
     },
 
-    countdown: (unix, initialized) => {
-        let countDown = setInterval(() => {
-            if (!initialized) {
-                $('#weeks_timer').html('-')
-                $('#days_timer').html('-')
-                $('#hours_timer').html('-')
-                $('#minutes_timer').html('-')
-                $('#seconds_timer').html('-')
-                clearInterval(countDown)
-            } else {
-                let now = new Date().getTime()
-                let end = (parseInt(unix) * 1000) 
-                let distance = end - now
-                let newDate = new Date(distance)
-
-                let hours = newDate.getHours()
-                let minutes = newDate.getMinutes()
-                let seconds = newDate.getSeconds()
-
-                let totalSeconds = Math.floor(distance / 1000)
-                let weeks = Math.floor(totalSeconds / 604800)
-
-                let days = 0
-
-                if (weeks === 0) {
-                    days = Math.floor(totalSeconds / 86400)
-                } else  {
-                    days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
-                }
-
-                $('#weeks_timer').html(weeks)
-                $('#days_timer').html(days)
-                $('#hours_timer').html(hours)
-                $('#minutes_timer').html(minutes)
-                $('#seconds_timer').html(seconds)
-                
-                if (distance < 0) {
-                    $('#weeks_timer').html(0)
-                    $('#days_timer').html(0)
-                    $('#hours').html(0)
-                    $('#minutes').html(0)
-                    $('#seconds').html(0)
-                    clearInterval(countDown)
-                }
-            }
-        }, 1000)
-    },
+    
 
 
     // test out async await pattern here

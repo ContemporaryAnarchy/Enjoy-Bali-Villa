@@ -91,21 +91,6 @@ let Lottery = {
 
     },
 
-    setBalances: async () => {
-        const values = await Lottery.retrieveValues()
-        let odds = (values.yourTickets / values.totalTickets) * 100
-        let oddsPrecise = odds.toPrecision(4) 
-
-        if (values.isInitialized) {
-            if (values.yourTickets > 0) {
-                $('#odds').html(oddsPrecise + " %")
-            }
-            $('#ticket_price').html(web3.fromWei(values.ticketPrice, 'ether'))
-            $('#your_tickets').html(values.yourTickets)
-            $('#lottery_active').html('True')
-        }
-    },
-
     countdown: (unix, initialized) => {
         let countDown = setInterval(() => {
             if (!initialized) {
@@ -153,6 +138,23 @@ let Lottery = {
             }
         }, 1000)
     },
+
+    setBalances: async () => {
+        const values = await Lottery.retrieveValues()
+        let odds = (values.yourTickets / values.totalTickets) * 100
+        let oddsPrecise = odds.toPrecision(4) 
+
+        if (values.isInitialized) {
+            if (values.yourTickets > 0) {
+                $('#odds').html(oddsPrecise + " %")
+            }
+            $('#ticket_price').html(web3.fromWei(values.ticketPrice, 'ether'))
+            $('#your_tickets').html(values.yourTickets)
+            $('#lottery_active').html('True')
+        }
+    },
+
+    
 
 
     // test out async await pattern here
