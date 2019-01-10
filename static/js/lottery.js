@@ -7,15 +7,24 @@ let Lottery = {
     web3Inst: null,
     contracts: {},
     loading: false,
-    initializeEvent: null,
     contractInstance: null,
     account: null,
+    unixStartTime: null,
+    timerRunning: false,
+    stopTimer: false,
+
     
     init: async() => {
         await Lottery.newWeb3()
         await Lottery.newContract()
         await Lottery.render()
         await Lottery.setBalances()
+        
+        const isActive = await Lottery.isInitialized()
+        if (isActive) {
+            Lottery.countdown()
+        }
+
         Lottery.listenForEvents()
     },
 
@@ -73,7 +82,7 @@ let Lottery = {
         let softCap = await Lottery.softCap()
         let hardCap = await Lottery.hardCap()
         let startTimeUnix = await Lottery.startTime()
-        startTimeUnix = startTimeUnix.c[0]
+        Lottery.unixStartTime = startTimeUnix.c[0]
 
         let ticketPrice = await Lottery.getTicketPrice()
         let isInitialized = await Lottery.isInitialized()
@@ -82,8 +91,6 @@ let Lottery = {
         let totalTickets = await Lottery.totalTicketsPurchased()
         let yourTickets = await Lottery.ownerTicketCount()
         let contractBalance = await Lottery.contractBalance()
-
-        Lottery.countdown(startTimeUnix, isInitialized)
         
         return {
                 isInitialized: isInitialized,
@@ -98,50 +105,46 @@ let Lottery = {
         
     },
 
-    countdown: (unix, initialized) => {
+    countdown: () => {
+        let end = (parseInt(Lottery.unixStartTime) * 1000)
+        console.log(`END: ${end}`)
+
         let countDown = setInterval(() => {
-            if (!initialized) {
-                $('#weeks_timer').html('-')
-                $('#days_timer').html('-')
-                $('#hours_timer').html('-')
-                $('#minutes_timer').html('-')
-                $('#seconds_timer').html('-')
+            
+            Lottery.timerRunning = true
+            console.log(Lottery.stopTimer)
+            if (Lottery.stopTimer) {
+                $('#weeks_timer').html(0)
+                $('#days_timer').html(0)
+                $('#hours_timer').html(0)
+                $('#minutes_timer').html(0)
+                $('#seconds_timer').html(0)
                 clearInterval(countDown)
             } else {
                 let now = new Date().getTime()
-                let end = (parseInt(unix) * 1000)
-                let distance = end - now
-                let newDate = new Date(distance)
-
-                let hours = newDate.getHours()
-                let minutes = newDate.getMinutes()
-                let seconds = newDate.getSeconds()
-
+                let distance = (end - now)
                 let totalSeconds = Math.floor(distance / 1000)
+                let newDate = new Date(totalSeconds * 1000)
+    
                 let weeks = Math.floor(totalSeconds / 604800)
-
                 let days = 0
-
+                
                 if (weeks === 0) {
                     days = Math.floor(totalSeconds / 86400)
                 } else {
                     days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
                 }
-
+    
+                let hours = newDate.getHours() - 8
+                let minutes = newDate.getMinutes()
+                let seconds = newDate.getSeconds()
+    
+    
                 $('#weeks_timer').html(weeks)
                 $('#days_timer').html(days)
                 $('#hours_timer').html(hours)
                 $('#minutes_timer').html(minutes)
                 $('#seconds_timer').html(seconds)
-
-                if (distance < 0) {
-                    $('#weeks_timer').html(0)
-                    $('#days_timer').html(0)
-                    $('#hours').html(0)
-                    $('#minutes').html(0)
-                    $('#seconds').html(0)
-                    clearInterval(countDown)
-                }
             }
         }, 1000)
     },
@@ -183,33 +186,27 @@ let Lottery = {
             toBlock: 'latest'
         }).watch(function(error, event) {
             Lottery.setBalances()
-        })
-
-        Lottery.contractInstance.logQuery({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
-        })
-
-        Lottery.contractInstance.logNumberReceived({}, {
-            toBlock: 'latest'
-        }).watch(function(error, event) {
-            console.log(event)
+            $('#buy_tickets_loader').css('visibility', 'hidden')
         })
 
         Lottery.contractInstance.balancesReset({}, {
             toBlock: 'latest'
-        }).watch((error, event) => {
+        }).watch(async(error, event) => {
             console.log(event)
-            Lottery.setBalances()
+            await Lottery.setBalances()
         })
 
         Lottery.contractInstance.lottoInitialized({}, {
             toBlock: 'latest'
         }).watch(async(error, event) => {
             await Lottery.setBalances()
+            
             $('#init_loader').css('visibility', 'hidden')
             $('#winner_address').html('-')
+
+            if (!Lottery.timerRunning) {
+                Lottery.countdown()
+            }
         })
 
         Lottery.contractInstance.winner({}, {
@@ -218,6 +215,7 @@ let Lottery = {
             console.log(event)
             $('#winner_address').html(event.args.winner)
             $('#winner_loader').css('visibility', 'hidden')
+            Lottery.stopTimer = true
 
         })
         
@@ -239,6 +237,7 @@ let Lottery = {
 
     initLotto: async() => {
         //.call inspects the return value of the function 
+
         let soft = $('#soft').val()
         let softWei = web3.toWei(soft, 'ether')
 
@@ -254,6 +253,7 @@ let Lottery = {
         let minutes = $('#minutes').val()
 
         let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
+
         $('#init_loader').css('visibility', 'visible')
         try {
             await Lottery.contractInstance.initialize(softWei, hardWei, ticketPriceWei, startTimeSeconds, {from: Lottery.account})
@@ -269,13 +269,18 @@ let Lottery = {
     },
 
 
-    buyTicket: async(amount) => {
+    buyTicket: async (amount) => {
         const ticketPrice = await Lottery.contractInstance.ticketPrice.call()
 
         let ticketPriceWei = ticketPrice.c[0] * 1e14
         let totalAmount = ticketPriceWei * amount
 
-        const txHash = await Lottery.contractInstance.buyTicket.sendTransaction({from: Lottery.account, value: totalAmount, gas: 180000})
+        $('#buy_tickets_loader').css('visibility', 'visible')
+        try {
+            await Lottery.contractInstance.buyTicket.sendTransaction({ from: Lottery.account, value: totalAmount, gas: 180000 })
+        } catch {
+            $('#buy_tickets_loader').css('visibility', 'hidden')
+        }
     }, 
 
     drawWinner: async() => {
