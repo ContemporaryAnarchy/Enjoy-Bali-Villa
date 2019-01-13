@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 import "./SafeMath.sol";
 import "./oraclize_API.sol";
 
@@ -11,8 +11,8 @@ contract Lottery is usingOraclize {
     
     bytes newProof;
 
-    address public owner;
-    address[] buyerPosition;
+    address payable owner;
+    address payable[] buyerPosition;
     
     uint public testValue;
 
@@ -23,11 +23,15 @@ contract Lottery is usingOraclize {
     uint public startTime;
     uint public ticketsPurchased;
     uint public playerCount;
+    uint public lottoId;
+    uint lottoBalance;
     
     bool public isInitialized = false;
+    bool public softCapReached = false;
     
     mapping (address => uint) ownerTicketCount;
     mapping (bytes32 => bool) validId;
+    mapping (address => uint) ownerBalance;
     
     modifier onlyOwner() {
         require(owner == msg.sender, "Not owner");
@@ -42,7 +46,8 @@ contract Lottery is usingOraclize {
         uint softCap,
         uint hardCap,
         uint ticketPrice,
-        uint startTime
+        uint start,
+        uint id
     );
 
     event ticketPurchased (
@@ -82,6 +87,7 @@ contract Lottery is usingOraclize {
     
     constructor() public payable {
         owner = msg.sender;
+        ownerBalance[owner] = msg.value;
         testValue = 1;
         oraclize_setCustomGasPrice(1000000000 wei);
         oraclize_setProof(proofType_TLSNotary | proofStorage_IPFS);
@@ -99,15 +105,15 @@ contract Lottery is usingOraclize {
         return (softCap, hardCap, startTime);
     }
 
-    function contractBalance() public view returns(uint) {
-        return address(this).balance;
+    function getOwnerBalance() public view onlyOwner returns (uint) {
+        return ownerBalance[owner];
     }
     
     /**
     *   @dev Initialize the lottery with the appropriate values. Only available to contract owner.
      */
 
-    function initialize(uint256 soft, uint256 hard, uint ticket, uint256 time) public onlyOwner {
+    function initialize(uint soft, uint hard, uint ticket, uint time) external onlyOwner {
         require(!isInitialized, "Lottery is already initialized!");
         isInitialized = true;
         
@@ -115,8 +121,9 @@ contract Lottery is usingOraclize {
         hardCap = hard;
         ticketPrice = ticket;
         startTime = now + time;
+        lottoId = lottoId.add(1);
 
-        emit lottoInitialized(softCap, hardCap, ticketPrice, startTime);
+        emit lottoInitialized(softCap, hardCap, ticketPrice, startTime, lottoId);
         
     }
     
@@ -142,7 +149,7 @@ contract Lottery is usingOraclize {
     *   @dev Give a free first ticket to anyone who has been verified. verification is done off-chain and the owner calls the function. (OnlyOwner)
      */
     
-    function freeTicket(address buyer) public onlyOwner {
+    function freeTicket(address payable buyer) public onlyOwner {
         require(isInitialized, "Lottery is not initialized.");
         require(ownerTicketCount[buyer] == 0, "Buyer already has tickets.");
 
@@ -163,7 +170,8 @@ contract Lottery is usingOraclize {
     function buyTicket() public payable {
         require(isInitialized, "Lottery is not initialized.");
         require(msg.value > 0, "No ether sent.");
-        
+
+        lottoBalance = lottoBalance.add(msg.value);
         uint value = msg.value.div(ticketPrice);
         ownerTicketCount[msg.sender] = ownerTicketCount[msg.sender].add(value);
         ticketsPurchased = ticketsPurchased.add(value);
@@ -173,6 +181,10 @@ contract Lottery is usingOraclize {
         //instead of having ticket IDs, this design tracks the order in which addresses participate.
         buyerPosition.push(msg.sender);
 
+        if (lottoBalance >= softCap) {
+            softCapReached = true;
+        }
+
         emit ticketPurchased(msg.sender, value);
     }
     
@@ -180,7 +192,7 @@ contract Lottery is usingOraclize {
      * @dev Oraclize callback function
     */
     
-    function __callback(bytes32 qId, string result, bytes proof) public {
+    function __callback(bytes32 qId, string memory result, bytes memory proof) public {
         require(msg.sender == oraclize_cbAddress(), "Wrong address");
         require(validId[qId], "Invalid ID");
         
@@ -205,14 +217,20 @@ contract Lottery is usingOraclize {
         require(isInitialized, "Lottery is not initialized");
         isInitialized = false;  
         
-        _setQuery2();   
-        _setQuery123();
-        
-        bytes32 qId = oraclize_query("nested", query123);
-        
-        validId[qId] = true;
+        if (!softCapReached) {
+            _refund();
+        } else {
+            _withdrawBalance();
+            _setQuery2();   
+            _setQuery123();
+            
+            bytes32 qId = oraclize_query("nested", query123);
+            
+            validId[qId] = true;
 
-        emit logQuery("Oraclize query was sent. Standing by for response.");
+            emit logQuery("Oraclize query was sent. Standing by for response.");
+        }
+
     }
     
     /**
@@ -264,28 +282,55 @@ contract Lottery is usingOraclize {
         query123 = string(abi.encodePacked(query1, query2, query3));
     }
     
-    function getQuery() public view returns(string) {
+    function getQuery() public view returns(string memory) {
         return query123;
     }
+
     /**
-     * @dev Withdraw function. Only owner can withdraw contract funds.
+     * @dev Refund function. Refunds customers' ether
+    */
+
+    function _refund() private {
+        for (uint i; i < buyerPosition.length; i++) {
+
+            uint refundAmount = ownerTicketCount[buyerPosition[i]] * ticketPrice;
+
+            buyerPosition[i].transfer(refundAmount);
+
+            
+        }
+        _resetBalances();
+    }
+
+    /**
+     * @dev Withdraw lottery funds. Only owner can withdraw contract funds.
     */
     
-    function withdrawBalance() public onlyOwner {
-        msg.sender.transfer(address(this).balance);
-        emit withdraw(msg.sender, address(this).balance);
+    function _withdrawBalance() internal {
+        owner.transfer(lottoBalance);
+        emit withdraw(owner, lottoBalance);
+    }
+
+    /**
+     * @dev Withdraw owner's funds. Only owner can withdraw contract funds.
+    */
+
+    function withdrawOwnerBalance() public onlyOwner {
+        uint balance = ownerBalance[owner];
+        ownerBalance[owner] = 0;
+        require(balance > 0, "Owner has no balance");
+        owner.transfer(balance);
+        emit withdraw(owner, balance);
     }
     
     /**
      * @dev Fallback function. Refunds ether to sender unless they are the owner.
     */
     
-    function() public payable {
-        if (msg.sender != owner) {
-            revert();
-        } else {
-            emit deposit(msg.sender, msg.value);
-        }
+    function() external payable {
+        require(msg.sender == owner);
+        ownerBalance[owner] = ownerBalance[owner].add(msg.value);
+        emit deposit(owner, msg.value);
     }
 
 

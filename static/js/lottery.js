@@ -3,8 +3,6 @@ $(document).ready(function () {
 });
 
 let Lottery = {
-
-    web3Inst: null,
     contracts: {},
     loading: false,
     contractInstance: null,
@@ -12,6 +10,7 @@ let Lottery = {
     unixStartTime: null,
     timerRunning: false,
     stopTimer: false,
+    lottoId: null,
 
     
     init: async() => {
@@ -33,20 +32,18 @@ let Lottery = {
             window.web3 = new Web3(ethereum);
             try {
                 await ethereum.enable();
-                Lottery.web3Inst = window.web3
             } catch (error) {
-                console.log('denied')
+                console.log('User denied authorization')
             }
         } else {
             window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-            Lottery.web3Inst = window.web3
         }
     },
     
     newContract: async () => {
-        const lottery = await $.getJSON('build/contracts/Lottery.json')
-        Lottery.contracts.lotteryContract = TruffleContract(lottery)
-        Lottery.contracts.lotteryContract.setProvider(web3.currentProvider)
+        const lottery = await $.getJSON('build/contracts/Lottery.json') 
+        Lottery.contracts.lotteryContract = TruffleContract(lottery)      
+        Lottery.contracts.lotteryContract.setProvider(web3.currentProvider) 
     },
 
     render: async() => {
@@ -82,7 +79,7 @@ let Lottery = {
         let softCap = await Lottery.softCap()
         let hardCap = await Lottery.hardCap()
         let startTimeUnix = await Lottery.startTime()
-        Lottery.unixStartTime = startTimeUnix.c[0]
+        Lottery.unixStartTime = parseInt(startTimeUnix.c[0]) * 1000
 
         let ticketPrice = await Lottery.getTicketPrice()
         let isInitialized = await Lottery.isInitialized()
@@ -90,7 +87,7 @@ let Lottery = {
         let totalPlayers = totalPlayersArray.c[0]
         let totalTickets = await Lottery.totalTicketsPurchased()
         let yourTickets = await Lottery.ownerTicketCount()
-        let contractBalance = await Lottery.contractBalance()
+        let ownerBalance = await Lottery.getOwnerBalance()
         
         return {
                 isInitialized: isInitialized,
@@ -100,19 +97,17 @@ let Lottery = {
                 totalTickets: totalTickets,
                 totalPlayers: totalPlayers,
                 yourTickets: yourTickets,
-                contractBalance: contractBalance
+                ownerBalance: ownerBalance
             }  
         
     },
 
     countdown: () => {
-        let end = (parseInt(Lottery.unixStartTime) * 1000)
-        console.log(`END: ${end}`)
+        let end = Lottery.unixStartTime
 
         let countDown = setInterval(() => {
             
             Lottery.timerRunning = true
-            console.log(Lottery.stopTimer)
             if (Lottery.stopTimer) {
                 $('#weeks_timer').html(0)
                 $('#days_timer').html(0)
@@ -125,7 +120,7 @@ let Lottery = {
                 let distance = (end - now)
                 let totalSeconds = Math.floor(distance / 1000)
                 let newDate = new Date(totalSeconds * 1000)
-    
+
                 let weeks = Math.floor(totalSeconds / 604800)
                 let days = 0
                 
@@ -134,11 +129,25 @@ let Lottery = {
                 } else {
                     days = Math.floor((totalSeconds % (weeks * 604800)) / 86400)
                 }
-    
-                let hours = newDate.getHours() - 8
+                
+                let hours = 0 
+
+                if (days == 0 && weeks == 0) {
+                    hours = Math.floor(totalSeconds / 3600)
+                } else if (days == 0 && weeks != 0) {
+                    let remainderA = totalSeconds % 604800
+                    hours = Math.floor(remainderA / 3600)
+                } else if (weeks == 0 && days != 0) {
+                    let remainderB = totalSeconds % 86400
+                    hours = Math.floor(remainderB / 3600)
+                } else if (weeks != 0 && days != 0) {
+                    let remainderC = totalSeconds % 604800
+                    let remainderD = remainderC % 86400
+                    hours = Math.floor(remainderD / 3600)
+                }
+
                 let minutes = newDate.getMinutes()
                 let seconds = newDate.getSeconds()
-    
     
                 $('#weeks_timer').html(weeks)
                 $('#days_timer').html(days)
@@ -154,7 +163,7 @@ let Lottery = {
         let odds = (values.yourTickets / values.totalTickets) * 100
         let oddsPrecise = odds.toPrecision(4) 
 
-        $('#balance').html(values.contractBalance)
+        $('#balance').html(values.ownerBalance)
         if (values.isInitialized) {
             if (values.yourTickets > 0) {
                 $('#odds').html(oddsPrecise + " %")
@@ -192,13 +201,17 @@ let Lottery = {
         Lottery.contractInstance.balancesReset({}, {
             toBlock: 'latest'
         }).watch(async(error, event) => {
-            console.log(event)
             await Lottery.setBalances()
+            Lottery.stopTimer = true
+            Lottery.timerRunning = false
+            $('#winner_loader').css('visibility', 'hidden')
         })
 
         Lottery.contractInstance.lottoInitialized({}, {
             toBlock: 'latest'
         }).watch(async(error, event) => {
+            Lottery.stopTimer = false
+            Lottery.lottoId = event.args.id
             await Lottery.setBalances()
             
             $('#init_loader').css('visibility', 'hidden')
@@ -212,7 +225,6 @@ let Lottery = {
         Lottery.contractInstance.winner({}, {
             toBlock: 'latest'
         }).watch((error, event) => {
-            console.log(event)
             $('#winner_address').html(event.args.winner)
             $('#winner_loader').css('visibility', 'hidden')
             Lottery.stopTimer = true
@@ -252,7 +264,19 @@ let Lottery = {
         let hours = $('#hours').val()
         let minutes = $('#minutes').val()
 
-        let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60)
+        if (weeks == 0) {
+            weeks = ''
+        }
+        if (days == 0) {
+            days = ''
+        }
+        if (hours == 0) {
+            hours = ''
+        }
+        if (minutes == 0) {
+            minutes = ''
+        }
+        let startTimeSeconds = (weeks * 604800) + (days * 86400) + (hours * 3600) + (minutes * 60) 
 
         $('#init_loader').css('visibility', 'visible')
         try {
@@ -295,7 +319,7 @@ let Lottery = {
     withdraw: async() => {
         $('#withdraw_loader').css('visibility', 'visible')
         try {
-            await Lottery.contractInstance.withdrawBalance({from: web3.eth.accounts[0]})
+            await Lottery.contractInstance.withdrawOwnerBalance({from: web3.eth.accounts[0]})
         } catch {
             $('#withdraw_loader').css('visibility', 'hidden')
         }
@@ -329,12 +353,12 @@ let Lottery = {
 
     softCap: async() => {
         const result = await Lottery.contractInstance.softCap()
-        return result.c[0] / 1e5
+        return result.c[0] / 1e4
     },
     
     hardCap: async() => {
         const result = await Lottery.contractInstance.hardCap()
-        return result.c[0] / 1e5
+        return result.c[0] / 1e4
     },
 
     startTime: async() => {
@@ -352,8 +376,8 @@ let Lottery = {
         return result
     },
 
-    contractBalance: async() => {
-        const result = await Lottery.contractInstance.contractBalance()
+    getOwnerBalance: async() => {
+        const result = await Lottery.contractInstance.getOwnerBalance()
         return result.c[0] / 1e4
     }
 }
